@@ -58,12 +58,13 @@ func (p *Player) StartPlayer(rows *ui.Ui) {
 	for {
 		select {
 		case <-p.Play:
-			p.playSong(rows.SongsList.Rows[rows.SongsList.SelectedRow])
 			if p.finished {
 				rows.SongsList.SelectedRow++
 				if rows.SongsList.SelectedRow >= len(rows.SongsList.Rows) {
 					rows.SongsList.SelectedRow = 0
 				}
+				p.playSong(rows.SongsList.Rows[rows.SongsList.SelectedRow])
+			} else {
 				p.playSong(rows.SongsList.Rows[rows.SongsList.SelectedRow])
 			}
 		}
@@ -132,7 +133,9 @@ func (p *Player) playSong(file string) {
 			p.IsPlaying = false
 			return
 		case <-p.Mute:
+			speaker.Lock()
 			volume.Silent = !volume.Silent
+			speaker.Unlock()
 		case <-time.After(time.Second):
 			speaker.Lock()
 			position := format.SampleRate.D(streamer.Position()).Round(time.Second)

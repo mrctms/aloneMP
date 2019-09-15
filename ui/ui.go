@@ -64,7 +64,7 @@ func (u *Ui) SetProgDur(prog string, dur string, percentage int) {
 func (u *Ui) renderSongsList(w, h int) {
 	l := widgets.NewList()
 	l.Title = "Songs List"
-	l.SetRect(0, 10, w/3, h-5)
+	l.SetRect(0, 10, w/2, h-5)
 	l.SelectedRowStyle = termui.NewStyle(termui.ColorWhite, termui.ColorBlue)
 	u.SongsList = l
 	termui.Render(u.SongsList)
@@ -73,7 +73,7 @@ func (u *Ui) renderSongsList(w, h int) {
 func (u *Ui) renderSongInfo(w, h int) {
 	i := widgets.NewParagraph()
 	i.Title = "Info"
-	i.SetRect(w, 10, w/3, h-5)
+	i.SetRect(w, 10, w/2, h-5)
 	u.SongInfo = i
 	termui.Render(u.SongInfo)
 }
@@ -126,7 +126,7 @@ func (u *Ui) renderBanner(w, h int) {
 func (u *Ui) renderCommands(w, h int) {
 	c := widgets.NewParagraph()
 	c.Border = false
-	c.Text = "[[↑]](fg:yellow,mod:bold)/[[↓]](fg:yellow,mod:bold) Browse Songs\n" +
+	c.Text = "[[↑]](fg:yellow,mod:bold)[[↓]](fg:yellow,mod:bold) Browse Songs\n" +
 		"[[Enter]](fg:yellow,mod:bold) Play Selected Song\n" +
 		"[[Space]](fg:yellow,mod:bold) Pause/Resume\n" +
 		"[[m]](fg:yellow,mod:bold) Mute\n" +

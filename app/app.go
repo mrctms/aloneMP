@@ -40,7 +40,7 @@ func Run(files []string) {
 		tui.SongsList.Rows = append(tui.SongsList.Rows, v)
 	}
 
-	ticker := time.NewTicker(time.Second).C
+	ticker := time.NewTicker(time.Second / 2).C
 
 	go pr.StartPlayer(tui)
 
