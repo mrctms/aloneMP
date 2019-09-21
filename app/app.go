@@ -57,7 +57,6 @@ func Run(files []string) {
 			case "<Enter>":
 				if pr.IsPlaying {
 					pr.Next <- true
-					pr.Play <- true
 				} else {
 					pr.Play <- true
 				}
@@ -72,6 +71,8 @@ func Run(files []string) {
 			tui.SetProgDur(pr.Progress, pr.Duration, pr.SongLenght)
 			tui.RedrawAll()
 			tui.UpdateInfo(pr.SongInfo)
+		case <-pr.Finished:
+			pr.Play <- true
 		case <-pr.PlayingError:
 			termui.Close()
 			log.Fatalln(pr.ErrorMsg)

@@ -40,6 +40,7 @@ type Player struct {
 	Next         chan bool
 	Mute         chan bool
 	PlayingError chan error
+	Finished     chan bool
 	SongInfo     tag.Metadata
 	SongLenght   int
 	IsPlaying    bool
@@ -112,6 +113,7 @@ func (p *Player) playSong(file string) {
 	p.PaRes = make(chan bool)
 	p.Next = make(chan bool)
 	p.Mute = make(chan bool)
+	p.Finished = make(chan bool)
 
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/2))
 	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
@@ -131,6 +133,7 @@ func (p *Player) playSong(file string) {
 			speaker.Unlock()
 		case <-p.Next:
 			p.IsPlaying = false
+			p.Finished <- true
 			return
 		case <-p.Mute:
 			speaker.Lock()
@@ -147,6 +150,7 @@ func (p *Player) playSong(file string) {
 			if position == lenght {
 				p.finished = true
 				p.IsPlaying = false
+				p.Finished <- true
 				return
 			}
 
