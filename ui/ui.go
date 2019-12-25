@@ -127,6 +127,7 @@ func (u *Ui) renderCommands(w, h int) {
 	c := widgets.NewParagraph()
 	c.Border = false
 	c.Text = "[[↑]](fg:yellow,mod:bold)[[↓]](fg:yellow,mod:bold) Browse Songs\n" +
+		"[[→]](fg:yellow,mod:bold)[[←]](fg:yellow,mode:bold) Volume\n" +
 		"[[Enter]](fg:yellow,mod:bold) Play Selected Song\n" +
 		"[[Space]](fg:yellow,mod:bold) Pause/Resume\n" +
 		"[[m]](fg:yellow,mod:bold) Mute\n" +

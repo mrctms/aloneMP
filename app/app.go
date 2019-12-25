@@ -40,9 +40,9 @@ func Run(files []string) {
 		tui.SongsList.Rows = append(tui.SongsList.Rows, v)
 	}
 
-	ticker := time.NewTicker(time.Second / 2).C
+	ticker := time.NewTicker(time.Second).C
 
-	go pr.StartPlayer(tui)
+	go pr.StartPlayer()
 
 	for {
 		select {
@@ -56,14 +56,18 @@ func Run(files []string) {
 				tui.SongsList.ScrollDown()
 			case "<Enter>":
 				if pr.IsPlaying {
-					pr.Next <- true
-				} else {
-					pr.Play <- true
+					pr.Close()
 				}
+				pr.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
+				pr.Play <- true
 			case "<Space>":
 				pr.PaRes <- true
 			case "m":
 				pr.Mute <- true
+			case "<Left>":
+				pr.VolumeDown <- true
+			case "<Right>":
+				pr.VolumeUp <- true
 			case "<Resize>":
 				return // TODO
 			}
@@ -72,6 +76,11 @@ func Run(files []string) {
 			tui.RedrawAll()
 			tui.UpdateInfo(pr.SongInfo)
 		case <-pr.Finished:
+			tui.SongsList.SelectedRow++
+			if tui.SongsList.SelectedRow >= len(tui.SongsList.Rows) {
+				tui.SongsList.SelectedRow = 0
+			}
+			pr.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
 			pr.Play <- true
 		case <-pr.PlayingError:
 			termui.Close()

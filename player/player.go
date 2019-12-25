@@ -31,134 +31,153 @@ import (
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
-	"github.com/marcktomack/aloneMP/ui"
 )
 
+var initSimpleRate = beep.SampleRate(44100)
+
 type Player struct {
-	PaRes        chan bool // pause/resume
-	Play         chan bool
-	Next         chan bool
-	Mute         chan bool
-	PlayingError chan error
-	Finished     chan bool
-	SongInfo     tag.Metadata
-	SongLenght   int
-	IsPlaying    bool
-	Duration     string
-	Progress     string
-	ErrorMsg     string
-	finished     bool
+	PaRes                chan bool // pause/resume
+	Play                 chan bool
+	Mute                 chan bool
+	VolumeUp             chan bool
+	VolumeDown           chan bool
+	PlayingError         chan error
+	SongToPlay           string
+	terminateCurrentSong bool
+	IsPlaying            bool
+	SongInfo             tag.Metadata
+	SongLenght           int
+	Duration             string
+	Progress             string
+	ErrorMsg             string
+	Finished             chan bool
+	ctrl                 *beep.Ctrl
+	volume               *effects.Volume
+	format               beep.Format
+	streamer             beep.StreamSeekCloser
+	currentVolume        float64
+	isPaused             bool
+	isSilence            bool
 }
 
 func NewPlayer() *Player {
-	return new(Player)
+	return &Player{Play: make(chan bool), PaRes: make(chan bool), Mute: make(chan bool), VolumeUp: make(chan bool), VolumeDown: make(chan bool), PlayingError: make(chan error), Finished: make(chan bool)}
 }
 
-func (p *Player) StartPlayer(rows *ui.Ui) {
-	p.Play = make(chan bool)
-	for {
-		select {
-		case <-p.Play:
-			if p.finished {
-				rows.SongsList.SelectedRow++
-				if rows.SongsList.SelectedRow >= len(rows.SongsList.Rows) {
-					rows.SongsList.SelectedRow = 0
-				}
-				p.playSong(rows.SongsList.Rows[rows.SongsList.SelectedRow])
-			} else {
-				p.playSong(rows.SongsList.Rows[rows.SongsList.SelectedRow])
-			}
-		}
-	}
-}
-
-func (p *Player) playSong(file string) {
-
-	var streamer beep.StreamSeekCloser
-	var format beep.Format
-	var decodeErr, tagErr error
-
-	p.PlayingError = make(chan error)
+func (p *Player) loadStreamerAndFormat(file string) error {
 
 	f, err := os.Open(file)
 	if err != nil {
-		p.PlayingError <- err
-		p.ErrorMsg = fmt.Sprintf("%v", err)
-		return
+		return err
 	}
 
-	p.SongInfo, tagErr = tag.ReadFrom(f)
-	if tagErr != nil {
+	p.SongInfo, err = tag.ReadFrom(f)
+	if err != nil {
 		p.SongInfo = nil
 	}
 
 	ex := filepath.Ext(f.Name())
 	switch ex {
 	case ".mp3":
-		streamer, format, decodeErr = mp3.Decode(f)
+		p.streamer, p.format, err = mp3.Decode(f)
 	case ".wav":
-		streamer, format, decodeErr = wav.Decode(f)
+		p.streamer, p.format, err = wav.Decode(f)
 	case ".flac":
-		streamer, format, decodeErr = flac.Decode(f)
+		p.streamer, p.format, err = flac.Decode(f)
 	}
 
-	if decodeErr != nil {
-		p.PlayingError <- decodeErr
-		p.ErrorMsg = fmt.Sprintf("%v", decodeErr)
-		return
+	if err != nil {
+		return err
 	}
 
-	defer streamer.Close()
+	return nil
+}
 
-	p.PaRes = make(chan bool)
-	p.Next = make(chan bool)
-	p.Mute = make(chan bool)
-	p.Finished = make(chan bool)
-
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/2))
-	ctrl := &beep.Ctrl{Streamer: streamer, Paused: false}
-	volume := &effects.Volume{
-		Streamer: ctrl,
-		Base:     2,
-		Volume:   0,
-		Silent:   false,
+func (p *Player) StartPlayer() {
+	speaker.Init(initSimpleRate, initSimpleRate.N(time.Second/2))
+	for {
+		select {
+		case <-p.Play:
+			err := p.loadStreamerAndFormat(p.SongToPlay)
+			if err != nil {
+				p.PlayingError <- err
+				p.ErrorMsg = fmt.Sprintf("%v", err)
+			}
+			res := beep.Resample(4, p.format.SampleRate, initSimpleRate, p.streamer)
+			p.ctrl = &beep.Ctrl{Streamer: res, Paused: p.isPaused}
+			p.volume = &effects.Volume{
+				Streamer: p.ctrl,
+				Base:     2,
+				Volume:   p.currentVolume,
+				Silent:   p.isSilence,
+			}
+			speaker.Play(p.volume)
+			p.controlSong()
+		}
 	}
-	speaker.Play(volume)
+
+}
+
+func (p *Player) controlSong() {
 	p.IsPlaying = true
+	p.terminateCurrentSong = false
 	for {
 		select {
 		case <-p.PaRes:
 			speaker.Lock()
-			ctrl.Paused = !ctrl.Paused
+			p.ctrl.Paused = !p.ctrl.Paused
 			speaker.Unlock()
-		case <-p.Next:
-			p.IsPlaying = false
-			p.Finished <- true
-			return
 		case <-p.Mute:
 			speaker.Lock()
-			volume.Silent = !volume.Silent
+			p.volume.Silent = !p.volume.Silent
+			speaker.Unlock()
+		case <-p.VolumeUp:
+			speaker.Lock()
+			p.volume.Volume += 0.5
+			speaker.Unlock()
+		case <-p.VolumeDown:
+			speaker.Lock()
+			p.volume.Volume -= 0.5
 			speaker.Unlock()
 		case <-time.After(time.Second):
-			speaker.Lock()
-			position := format.SampleRate.D(streamer.Position()).Round(time.Second)
-			lenght := format.SampleRate.D(streamer.Len()).Round(time.Second)
-			p.Duration = formatProgDur(lenght)
-			p.Progress = formatProgDur(position)
-			p.SongLenght = int(float64(position) / float64(lenght) * 100)
-			speaker.Unlock()
-			if position == lenght {
-				p.finished = true
-				p.IsPlaying = false
-				p.Finished <- true
+			if p.terminateCurrentSong {
+				p.isPaused = p.ctrl.Paused
+				p.currentVolume = p.volume.Volume
+				p.isSilence = p.volume.Silent
 				return
 			}
-
+			if p.format.SampleRate != 0 {
+				speaker.Lock()
+				position := p.format.SampleRate.D(p.streamer.Position()).Round(time.Second)
+				lenght := p.format.SampleRate.D(p.streamer.Len()).Round(time.Second)
+				p.Duration = formatProgDur(lenght)
+				p.Progress = formatProgDur(position)
+				p.SongLenght = int(float64(position) / float64(lenght) * 100)
+				speaker.Unlock()
+				if position == lenght {
+					p.IsPlaying = false
+					p.isPaused = p.ctrl.Paused
+					p.currentVolume = p.volume.Volume
+					p.isSilence = p.volume.Silent
+					p.Finished <- true
+					return
+				}
+			}
 		}
 	}
+
+}
+
+func (p *Player) Close() {
+	p.streamer.Close()
+	p.format.SampleRate = 0
+	speaker.Clear()
+	p.terminateCurrentSong = true
+	p.IsPlaying = false
 }
 
 func formatProgDur(d time.Duration) string {
+	// thanks to https://github.com/Depado
 	h := math.Mod(d.Hours(), 24)
 	m := math.Mod(d.Minutes(), 60)
 	s := math.Mod(d.Seconds(), 60)
