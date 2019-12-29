@@ -30,6 +30,7 @@ import (
 	"github.com/faiface/beep/flac"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
+	"github.com/faiface/beep/vorbis"
 	"github.com/faiface/beep/wav"
 )
 
@@ -84,6 +85,8 @@ func (p *Player) loadStreamerAndFormat(file string) error {
 		p.streamer, p.format, err = wav.Decode(f)
 	case ".flac":
 		p.streamer, p.format, err = flac.Decode(f)
+	case ".ogg":
+		p.streamer, p.format, err = vorbis.Decode(f)
 	}
 
 	if err != nil {

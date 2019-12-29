@@ -22,7 +22,7 @@ You can pass a directory with audio files:
 
 Or by default it will load audio files from `~/Music`
 
-Supported formats are <b>MP3</b>, <b>FLAC</b> and <b>WAV</b>
+Supported formats are <b>MP3</b>, <b>FLAC</b>, <b>OGG</b> and <b>WAV</b>
 
 # Build from source
 

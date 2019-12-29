@@ -30,7 +30,7 @@ import (
 
 var (
 	dir           = flag.Bool("dir", false, "Directory with audio files")
-	knowExtension = []string{".mp3", ".wav", ".flac"}
+	knowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
 )
 
 func getFiles(dir string) []string {
@@ -50,7 +50,7 @@ func getFiles(dir string) []string {
 	return files
 }
 
-func contains(s []string, e string) bool {
+func contains(s [4]string, e string) bool {
 	for _, v := range s {
 		if v == e {
 			return true
