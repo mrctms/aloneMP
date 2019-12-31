@@ -69,10 +69,17 @@ func Run(files []string) {
 			case "<Right>":
 				pr.VolumeUp <- true
 			case "<Resize>":
-				return // TODO
+				payload := e.Payload.(termui.Resize)
+				tui.SongsList.SetRect(0, 10, payload.Width/2, payload.Height-5)
+				tui.SongInfo.SetRect(payload.Width, 10, payload.Width/2, payload.Height-5)
+				tui.Commands.SetRect(payload.Width-30, 1, payload.Width, 9)
+				tui.Banner.SetRect(-1, -1, payload.Width-35, 8)
+				tui.SongProgress.SetRect(0, payload.Height-5, payload.Width, payload.Height-2)
+				termui.Clear()
+				tui.RedrawAll()
 			}
 		case <-ticker:
-			tui.SetProgDur(pr.Progress, pr.Duration, pr.SongLenght)
+			tui.SetProgDur(pr.Progress, pr.Duration, pr.SongLength)
 			tui.RedrawAll()
 			tui.UpdateInfo(pr.SongInfo)
 		case <-pr.Finished:

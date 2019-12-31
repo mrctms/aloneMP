@@ -38,7 +38,7 @@ type Ui struct {
 	SongProgress *widgets.Gauge
 	SongInfo     *widgets.Paragraph
 	Commands     *widgets.Paragraph
-	banner       *widgets.Paragraph
+	Banner       *widgets.Paragraph
 }
 
 func NewUi() *Ui {
@@ -119,8 +119,8 @@ func (u *Ui) renderBanner(w, h int) {
 	b.Text = aloneMP
 	b.TextStyle = termui.NewStyle(termui.ColorBlue, termui.ColorClear, termui.ModifierBold)
 	b.SetRect(-1, -1, w-35, 8)
-	u.banner = b
-	termui.Render(u.banner)
+	u.Banner = b
+	termui.Render(u.Banner)
 }
 
 func (u *Ui) renderCommands(w, h int) {
@@ -143,4 +143,5 @@ func (u *Ui) RedrawAll() {
 	termui.Render(u.SongsList)
 	termui.Render(u.SongInfo)
 	termui.Render(u.Commands)
+	termui.Render(u.Banner)
 }

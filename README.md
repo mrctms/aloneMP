@@ -1,6 +1,7 @@
 # aloneMP
 
 A minimal music player terminal based.
+Insipred by <a href="https://github.com/Depado/parakeet">parakeet</a>
 
 # Download and installation on Linux
 
