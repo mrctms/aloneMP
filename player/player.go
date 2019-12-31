@@ -47,7 +47,7 @@ type Player struct {
 	terminateCurrentSong bool
 	IsPlaying            bool
 	SongInfo             tag.Metadata
-	SongLenght           int
+	SongLength           int
 	Duration             string
 	Progress             string
 	ErrorMsg             string
@@ -152,12 +152,12 @@ func (p *Player) controlSong() {
 			if p.format.SampleRate != 0 {
 				speaker.Lock()
 				position := p.format.SampleRate.D(p.streamer.Position()).Round(time.Second)
-				lenght := p.format.SampleRate.D(p.streamer.Len()).Round(time.Second)
-				p.Duration = formatProgDur(lenght)
+				length := p.format.SampleRate.D(p.streamer.Len()).Round(time.Second)
+				p.Duration = formatProgDur(length)
 				p.Progress = formatProgDur(position)
-				p.SongLenght = int(float64(position) / float64(lenght) * 100)
+				p.SongLength = int(float64(position) / float64(length) * 100)
 				speaker.Unlock()
-				if position == lenght {
+				if position == length {
 					p.IsPlaying = false
 					p.isPaused = p.ctrl.Paused
 					p.currentVolume = p.volume.Volume
