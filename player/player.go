@@ -59,6 +59,7 @@ type Player struct {
 	currentVolume        float64
 	isPaused             bool
 	isSilence            bool
+	fileToPlay           *os.File
 }
 
 func NewPlayer() *Player {
@@ -66,27 +67,28 @@ func NewPlayer() *Player {
 }
 
 func (p *Player) loadStreamerAndFormat(file string) error {
+	var err error
 
-	f, err := os.Open(file)
+	p.fileToPlay, err = os.Open(file)
 	if err != nil {
 		return err
 	}
 
-	p.SongInfo, err = tag.ReadFrom(f)
+	p.SongInfo, err = tag.ReadFrom(p.fileToPlay)
 	if err != nil {
 		p.SongInfo = nil
 	}
 
-	ex := filepath.Ext(f.Name())
+	ex := filepath.Ext(p.fileToPlay.Name())
 	switch ex {
 	case ".mp3":
-		p.streamer, p.format, err = mp3.Decode(f)
+		p.streamer, p.format, err = mp3.Decode(p.fileToPlay)
 	case ".wav":
-		p.streamer, p.format, err = wav.Decode(f)
+		p.streamer, p.format, err = wav.Decode(p.fileToPlay)
 	case ".flac":
-		p.streamer, p.format, err = flac.Decode(f)
+		p.streamer, p.format, err = flac.Decode(p.fileToPlay)
 	case ".ogg":
-		p.streamer, p.format, err = vorbis.Decode(f)
+		p.streamer, p.format, err = vorbis.Decode(p.fileToPlay)
 	}
 
 	if err != nil {
@@ -124,6 +126,7 @@ func (p *Player) StartPlayer() {
 func (p *Player) controlSong() {
 	p.IsPlaying = true
 	p.terminateCurrentSong = false
+	defer p.fileToPlay.Close()
 	for {
 		select {
 		case <-p.PaRes:
