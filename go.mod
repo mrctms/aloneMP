@@ -1,6 +1,6 @@
-module github.com/marcktomack/aloneMP
+module aloneMP
 
-go 1.12
+go 1.14
 
 require (
 	github.com/dhowden/tag v0.0.0-20191122115059-7e5c04feccd8

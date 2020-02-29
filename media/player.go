@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-package player
+package media
 
 import (
 	"fmt"
@@ -50,8 +50,8 @@ type Player struct {
 	SongLength           int
 	Duration             string
 	Progress             string
-	ErrorMsg             string
 	Finished             chan bool
+	ErrorMsg             error
 	ctrl                 *beep.Ctrl
 	volume               *effects.Volume
 	format               beep.Format
@@ -106,7 +106,7 @@ func (p *Player) StartPlayer() {
 			err := p.loadStreamerAndFormat(p.SongToPlay)
 			if err != nil {
 				p.PlayingError <- err
-				p.ErrorMsg = fmt.Sprintf("%v", err)
+				p.ErrorMsg = fmt.Errorf("Failed to load the file %v", err)
 			}
 			res := beep.Resample(4, p.format.SampleRate, initSimpleRate, p.streamer)
 			p.ctrl = &beep.Ctrl{Streamer: res, Paused: p.isPaused}

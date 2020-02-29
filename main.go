@@ -24,8 +24,12 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 
-	"github.com/marcktomack/aloneMP/app"
+	"aloneMP/media"
+	"aloneMP/ui"
+
+	"github.com/gizak/termui/v3"
 )
 
 var (
@@ -59,6 +63,76 @@ func contains(s [4]string, e string) bool {
 	return false
 }
 
+func Run(files []string) {
+
+	if err := termui.Init(); err != nil {
+		log.Fatalf("Failed to initialize TUI: %v\n", err)
+	}
+	defer termui.Close()
+
+	tui := ui.NewTui()
+	player := media.NewPlayer()
+
+	for _, v := range files {
+		tui.SongsList.Rows = append(tui.SongsList.Rows, v)
+	}
+
+	ticker := time.NewTicker(time.Second).C
+
+	go player.StartPlayer()
+
+	for {
+		select {
+		case e := <-termui.PollEvents():
+			switch e.ID {
+			case "q":
+				return
+			case "<Up>":
+				tui.SongsList.ScrollUp()
+			case "<Down>":
+				tui.SongsList.ScrollDown()
+			case "<Enter>":
+				if player.IsPlaying {
+					player.Close()
+				}
+				player.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
+				player.Play <- true
+			case "<Space>":
+				player.PaRes <- true
+			case "m":
+				player.Mute <- true
+			case "<Left>":
+				player.VolumeDown <- true
+			case "<Right>":
+				player.VolumeUp <- true
+			case "<Resize>":
+				payload := e.Payload.(termui.Resize)
+				tui.SongsList.SetRect(0, 10, payload.Width/2, payload.Height-5)
+				tui.SongInfo.SetRect(payload.Width, 10, payload.Width/2, payload.Height-5)
+				tui.Commands.SetRect(payload.Width-30, 1, payload.Width, 9)
+				tui.Banner.SetRect(-1, -1, payload.Width-35, 8)
+				tui.SongProgress.SetRect(0, payload.Height-5, payload.Width, payload.Height-2)
+				termui.Clear()
+				tui.RedrawAll()
+			}
+		case <-ticker:
+			tui.SetProgDur(player.Progress, player.Duration, player.SongLength)
+			tui.RedrawAll()
+			tui.UpdateInfo(player.SongInfo)
+		case <-player.Finished:
+			tui.SongsList.SelectedRow++
+			if tui.SongsList.SelectedRow >= len(tui.SongsList.Rows) {
+				tui.SongsList.SelectedRow = 0
+			}
+			player.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
+			player.Play <- true
+		case <-player.PlayingError:
+			termui.Close()
+			log.Fatalln(player.ErrorMsg)
+		}
+	}
+}
+
 func main() {
 	flag.Parse()
 	if len(os.Args) == 1 {
@@ -69,7 +143,7 @@ func main() {
 			files := getFiles(musicDir)
 			if len(files) != 0 {
 				os.Chdir(musicDir)
-				app.Run(files)
+				Run(files)
 			} else {
 				log.Fatalln("No audio file found")
 			}
@@ -86,7 +160,7 @@ func main() {
 			files := getFiles(userDir)
 			if len(files) != 0 {
 				os.Chdir(userDir)
-				app.Run(files)
+				Run(files)
 			} else {
 				log.Fatalln("No audio file found")
 			}

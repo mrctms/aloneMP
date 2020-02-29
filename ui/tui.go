@@ -33,7 +33,7 @@ const aloneMP = `
 /_/   \_\_|\___/|_| |_|\___|_|  |_|_| 
 `
 
-type Ui struct {
+type Tui struct {
 	SongsList    *widgets.List
 	SongProgress *widgets.Gauge
 	SongInfo     *widgets.Paragraph
@@ -41,8 +41,8 @@ type Ui struct {
 	Banner       *widgets.Paragraph
 }
 
-func NewUi() *Ui {
-	ui := new(Ui)
+func NewTui() *Tui {
+	ui := new(Tui)
 	w, h := termui.TerminalDimensions()
 	ui.renderSongsList(w, h)
 	ui.renderSongInfo(w, h)
@@ -52,7 +52,7 @@ func NewUi() *Ui {
 	return ui
 }
 
-func (u *Ui) SetProgDur(prog string, dur string, percentage int) {
+func (u *Tui) SetProgDur(prog string, dur string, percentage int) {
 	if prog == "" && dur == "" {
 		u.SongProgress.Label = "00:00:00 / 00:00:00"
 	} else {
@@ -61,7 +61,7 @@ func (u *Ui) SetProgDur(prog string, dur string, percentage int) {
 	u.SongProgress.Percent = percentage
 }
 
-func (u *Ui) renderSongsList(w, h int) {
+func (u *Tui) renderSongsList(w, h int) {
 	l := widgets.NewList()
 	l.Title = "Songs List"
 	l.SetRect(0, 10, w/2, h-5)
@@ -70,7 +70,7 @@ func (u *Ui) renderSongsList(w, h int) {
 	termui.Render(u.SongsList)
 }
 
-func (u *Ui) renderSongInfo(w, h int) {
+func (u *Tui) renderSongInfo(w, h int) {
 	i := widgets.NewParagraph()
 	i.Title = "Info"
 	i.SetRect(w, 10, w/2, h-5)
@@ -78,7 +78,7 @@ func (u *Ui) renderSongInfo(w, h int) {
 	termui.Render(u.SongInfo)
 }
 
-func (u *Ui) UpdateInfo(info tag.Metadata) {
+func (u *Tui) UpdateInfo(info tag.Metadata) {
 	var text string
 	if info == nil {
 		text = "[File Type:](fg:blue,mod:bold)\n" +
@@ -102,7 +102,7 @@ func (u *Ui) UpdateInfo(info tag.Metadata) {
 	u.SongInfo.Text = text
 }
 
-func (u *Ui) renderProgress(w, h int) {
+func (u *Tui) renderProgress(w, h int) {
 	d := widgets.NewGauge()
 	d.LabelStyle = termui.NewStyle(termui.ColorWhite, termui.ColorClear)
 	d.Label = "00:00:00 / 00:00:00"
@@ -113,7 +113,7 @@ func (u *Ui) renderProgress(w, h int) {
 
 }
 
-func (u *Ui) renderBanner(w, h int) {
+func (u *Tui) renderBanner(w, h int) {
 	b := widgets.NewParagraph()
 	b.Border = false
 	b.Text = aloneMP
@@ -123,7 +123,7 @@ func (u *Ui) renderBanner(w, h int) {
 	termui.Render(u.Banner)
 }
 
-func (u *Ui) renderCommands(w, h int) {
+func (u *Tui) renderCommands(w, h int) {
 	c := widgets.NewParagraph()
 	c.Border = false
 	c.Text = "[[↑]](fg:yellow,mod:bold)[[↓]](fg:yellow,mod:bold) Browse Songs\n" +
@@ -138,7 +138,7 @@ func (u *Ui) renderCommands(w, h int) {
 
 }
 
-func (u *Ui) RedrawAll() {
+func (u *Tui) RedrawAll() {
 	termui.Render(u.SongProgress)
 	termui.Render(u.SongsList)
 	termui.Render(u.SongInfo)
