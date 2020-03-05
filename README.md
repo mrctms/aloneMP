@@ -34,3 +34,8 @@ git clone https://github.com/MarckTomack/aloneMP
 cd aloneMP
 go build
 ```
+
+# Depndencies
+
+aloneMP uses <a href="https://github.com/faiface/beep">beep</a> that uses <a href="https://github.com/hajimehoshi/oto">oto</a> see the dependencies <a href="https://github.com/hajimehoshi/oto#prerequisite">here</a>
+
