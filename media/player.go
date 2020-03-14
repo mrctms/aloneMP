@@ -51,7 +51,6 @@ type Player struct {
 	Duration             string
 	Progress             string
 	Finished             chan bool
-	ErrorMsg             error
 	ctrl                 *beep.Ctrl
 	volume               *effects.Volume
 	format               beep.Format
@@ -105,8 +104,7 @@ func (p *Player) StartPlayer() {
 		case <-p.Play:
 			err := p.loadStreamerAndFormat(p.SongToPlay)
 			if err != nil {
-				p.PlayingError <- err
-				p.ErrorMsg = fmt.Errorf("Failed to load the file %v", err)
+				p.PlayingError <- fmt.Errorf("Failed to load the file %v", err)
 			}
 			res := beep.Resample(4, p.format.SampleRate, initSimpleRate, p.streamer)
 			p.ctrl = &beep.Ctrl{Streamer: res, Paused: p.isPaused}

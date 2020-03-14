@@ -126,9 +126,9 @@ func Run(files []string) {
 			}
 			player.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
 			player.Play <- true
-		case <-player.PlayingError:
+		case err := <-player.PlayingError:
 			termui.Close()
-			log.Fatalln(player.ErrorMsg)
+			log.Fatalln(err.Error())
 		}
 	}
 }
