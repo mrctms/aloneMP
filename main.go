@@ -128,7 +128,7 @@ func Run(files []string) {
 			player.Play <- true
 		case err := <-player.PlayingError:
 			termui.Close()
-			log.Fatalln(err.Error())
+			log.Fatalln(err)
 		}
 	}
 }
@@ -139,6 +139,9 @@ func main() {
 		u, _ := user.Current()
 		musicDir := fmt.Sprintf("%s/Music", u.HomeDir)
 		f, err := os.Stat(musicDir)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		if f.IsDir() {
 			files := getFiles(musicDir)
 			if len(files) != 0 {
@@ -147,15 +150,16 @@ func main() {
 			} else {
 				log.Fatalln("No audio file found")
 			}
-		} else if err != nil {
-			log.Fatalln(err)
 		} else {
-			log.Fatalln("Music directory does not exist")
+			log.Fatalf("%s is not a directory\n", musicDir)
 		}
 	}
 	if *dir {
 		userDir := os.Args[2]
 		f, err := os.Stat(userDir)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		if f.IsDir() {
 			files := getFiles(userDir)
 			if len(files) != 0 {
@@ -164,10 +168,8 @@ func main() {
 			} else {
 				log.Fatalln("No audio file found")
 			}
-		} else if err != nil {
-			log.Fatalln(err)
 		} else {
-			log.Fatalf("Directory %s does not exist", userDir)
+			log.Fatalf("%s is not a directory\n", userDir)
 		}
 
 	}
