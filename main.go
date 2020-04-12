@@ -19,11 +19,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"aloneMP/media"
@@ -43,8 +43,9 @@ func getFiles(dir string) []string {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		if !info.IsDir() && contains(knowExtension, filepath.Ext(path)) {
-			files = append(files, info.Name())
+		if contains(knowExtension, filepath.Ext(path)) {
+			file := strings.TrimLeft(strings.Replace(path, dir, "", -1), "/\\")
+			files = append(files, file)
 		}
 		return nil
 	})
@@ -137,7 +138,7 @@ func main() {
 	flag.Parse()
 	if len(os.Args) == 1 {
 		u, _ := user.Current()
-		musicDir := fmt.Sprintf("%s/Music", u.HomeDir)
+		musicDir := filepath.Join(u.HomeDir, "Music")
 		f, err := os.Stat(musicDir)
 		if err != nil {
 			log.Fatalln(err)
