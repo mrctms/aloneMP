@@ -18,6 +18,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 package main
 
 import (
+	"aloneMP/media"
+	"aloneMP/ui"
 	"flag"
 	"log"
 	"os"
@@ -25,11 +27,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"aloneMP/media"
-	"aloneMP/ui"
-
-	"github.com/gizak/termui/v3"
 )
 
 var (
@@ -66,69 +63,50 @@ func contains(s [4]string, e string) bool {
 
 func Run(files []string) {
 
-	if err := termui.Init(); err != nil {
-		log.Fatalf("Failed to initialize TUI: %v\n", err)
-	}
-	defer termui.Close()
-
-	tui := ui.NewTui()
-	player := media.NewPlayer()
-
-	for _, v := range files {
-		tui.SongsList.Rows = append(tui.SongsList.Rows, v)
-	}
-
 	ticker := time.NewTicker(time.Second).C
 
+	player := media.NewPlayer()
+
+	tui := ui.NewTui()
+
+	tui.PopolateTracksList(files)
+
 	go player.StartPlayer()
+	go tui.Run()
+	defer func() {
+		if player.IsPlaying {
+			player.Close()
+		}
+		tui.Stop()
+	}()
 
 	for {
 		select {
-		case e := <-termui.PollEvents():
-			switch e.ID {
-			case "q":
-				return
-			case "<Up>":
-				tui.SongsList.ScrollUp()
-			case "<Down>":
-				tui.SongsList.ScrollDown()
-			case "<Enter>":
-				if player.IsPlaying {
-					player.Close()
-				}
-				player.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
-				player.Play <- true
-			case "<Space>":
-				player.PaRes <- true
-			case "m":
-				player.Mute <- true
-			case "<Left>":
-				player.VolumeDown <- true
-			case "<Right>":
-				player.VolumeUp <- true
-			case "<Resize>":
-				payload := e.Payload.(termui.Resize)
-				tui.SongsList.SetRect(0, 10, payload.Width/2, payload.Height-5)
-				tui.SongInfo.SetRect(payload.Width, 10, payload.Width/2, payload.Height-5)
-				tui.Commands.SetRect(payload.Width-30, 1, payload.Width, 9)
-				tui.Banner.SetRect(-1, -1, payload.Width-35, 8)
-				tui.SongProgress.SetRect(0, payload.Height-5, payload.Width, payload.Height-2)
-				termui.Clear()
-				tui.RedrawAll()
+		case track := <-tui.TrackSelected:
+			if player.IsPlaying {
+				player.Close()
 			}
-		case <-ticker:
-			tui.SetProgDur(player.Progress, player.Duration, player.SongLength)
-			tui.RedrawAll()
-			tui.UpdateInfo(player.SongInfo)
-		case <-player.Finished:
-			tui.SongsList.SelectedRow++
-			if tui.SongsList.SelectedRow >= len(tui.SongsList.Rows) {
-				tui.SongsList.SelectedRow = 0
-			}
-			player.SongToPlay = tui.SongsList.Rows[tui.SongsList.SelectedRow]
+			player.TrackToPlay = track
 			player.Play <- true
+		case paused := <-tui.Paused:
+			player.PaRes <- paused
+		case mute := <-tui.Mute:
+			player.Mute <- mute
+		case volumeDown := <-tui.VolumeDown:
+			player.VolumeDown <- volumeDown
+		case volumeUp := <-tui.VolumeUp:
+			player.VolumeUp <- volumeUp
+		case <-ticker:
+			tui.SetTrackInfo(player.TrackInfo)
+			tui.SetProgDur(player.Progress, player.Duration, player.TrackLength)
+			tui.Draw()
+		case <-player.Finished:
+			nextTrack := tui.NextTrack()
+			player.TrackToPlay = nextTrack
+			player.Play <- true
+		case <-tui.Quit:
+			return
 		case err := <-player.PlayingError:
-			termui.Close()
 			log.Fatalln(err)
 		}
 	}

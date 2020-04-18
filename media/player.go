@@ -37,28 +37,28 @@ import (
 var initSimpleRate = beep.SampleRate(44100)
 
 type Player struct {
-	PaRes                chan bool // pause/resume
-	Play                 chan bool
-	Mute                 chan bool
-	VolumeUp             chan bool
-	VolumeDown           chan bool
-	PlayingError         chan error
-	SongToPlay           string
-	terminateCurrentSong bool
-	IsPlaying            bool
-	SongInfo             tag.Metadata
-	SongLength           int
-	Duration             string
-	Progress             string
-	Finished             chan bool
-	ctrl                 *beep.Ctrl
-	volume               *effects.Volume
-	format               beep.Format
-	streamer             beep.StreamSeekCloser
-	currentVolume        float64
-	isPaused             bool
-	isSilence            bool
-	fileToPlay           *os.File
+	PaRes                 chan bool // pause/resume
+	Play                  chan bool
+	Mute                  chan bool
+	VolumeUp              chan bool
+	VolumeDown            chan bool
+	PlayingError          chan error
+	TrackToPlay           string
+	terminateCurrentTrack bool
+	IsPlaying             bool
+	TrackInfo             tag.Metadata
+	TrackLength           int
+	Duration              string
+	Progress              string
+	Finished              chan bool
+	ctrl                  *beep.Ctrl
+	volume                *effects.Volume
+	format                beep.Format
+	streamer              beep.StreamSeekCloser
+	currentVolume         float64
+	isPaused              bool
+	isSilence             bool
+	fileToPlay            *os.File
 }
 
 func NewPlayer() *Player {
@@ -73,9 +73,9 @@ func (p *Player) loadStreamerAndFormat(file string) error {
 		return err
 	}
 
-	p.SongInfo, err = tag.ReadFrom(p.fileToPlay)
+	p.TrackInfo, err = tag.ReadFrom(p.fileToPlay)
 	if err != nil {
-		p.SongInfo = nil
+		p.TrackInfo = nil
 	}
 
 	ex := filepath.Ext(p.fileToPlay.Name())
@@ -102,7 +102,7 @@ func (p *Player) StartPlayer() {
 	for {
 		select {
 		case <-p.Play:
-			err := p.loadStreamerAndFormat(p.SongToPlay)
+			err := p.loadStreamerAndFormat(p.TrackToPlay)
 			if err != nil {
 				p.PlayingError <- fmt.Errorf("Failed to load the file %v", err)
 			}
@@ -115,15 +115,15 @@ func (p *Player) StartPlayer() {
 				Silent:   p.isSilence,
 			}
 			speaker.Play(p.volume)
-			p.controlSong()
+			p.controlTrack()
 		}
 	}
 
 }
 
-func (p *Player) controlSong() {
+func (p *Player) controlTrack() {
 	p.IsPlaying = true
-	p.terminateCurrentSong = false
+	p.terminateCurrentTrack = false
 	defer p.fileToPlay.Close()
 	for {
 		select {
@@ -144,7 +144,7 @@ func (p *Player) controlSong() {
 			p.volume.Volume -= 0.5
 			speaker.Unlock()
 		case <-time.After(time.Second):
-			if p.terminateCurrentSong {
+			if p.terminateCurrentTrack {
 				p.isPaused = p.ctrl.Paused
 				p.currentVolume = p.volume.Volume
 				p.isSilence = p.volume.Silent
@@ -156,7 +156,7 @@ func (p *Player) controlSong() {
 				length := p.format.SampleRate.D(p.streamer.Len()).Round(time.Second)
 				p.Duration = formatProgDur(length)
 				p.Progress = formatProgDur(position)
-				p.SongLength = int(float64(position) / float64(length) * 100)
+				p.TrackLength = int(float64(position) / float64(length) * 100)
 				speaker.Unlock()
 				if position == length {
 					p.IsPlaying = false
@@ -176,7 +176,7 @@ func (p *Player) Close() {
 	p.streamer.Close()
 	p.format.SampleRate = 0
 	speaker.Clear()
-	p.terminateCurrentSong = true
+	p.terminateCurrentTrack = true
 	p.IsPlaying = false
 }
 
