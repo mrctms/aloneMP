@@ -3,6 +3,8 @@
 A minimal music player terminal based.
 Insipred by <a href="https://github.com/Depado/parakeet">parakeet</a>
 
+<img src="demo.gif" alt="demo">
+
 # Download and installation on Linux
 
 Download <a href="https://github.com/marcktomack/aloneMP/releases">here</a>
