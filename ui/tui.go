@@ -85,7 +85,7 @@ func (t *Tui) Run() {
 		switch event.Key() {
 		case tcell.KeyEnter:
 			t.TrackSelected <- t.tracksList.GetSelectedItemText()
-		case tcell.KeyRune:
+		case tcell.KeyCtrlP:
 			t.Paused <- true
 			return nil
 		case tcell.KeyCtrlSpace:
@@ -122,7 +122,7 @@ func (t *Tui) setCmdText() {
 		[yellow](↑)(↓) Browse Songs
 		[yellow] (←)(→) Volume
 		[yellow](Enter) Play Selected Song 
-		[yellow](Space) Pause/Resume
+		[yellow](Ctrl+P) Pause/Resume
 		[yellow](Ctrl+Space) Mute[yellow] 
 		[yellow](Ctrl+C) Quit[yellow]`)
 }
