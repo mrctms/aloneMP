@@ -29,7 +29,7 @@ type ProgressView struct {
 func NewProgressView() *ProgressView {
 	progressView := new(ProgressView)
 	progressView.ProgressBar = cview.NewProgressBar()
-	progressView.ProgressBar.FilledColor = tcell.ColorGreen
+	progressView.ProgressBar.SetFilledColor(tcell.ColorGreen)
 	progressView.ProgressBar.SetTitle("00:00:00/00:00:00")
 	progressView.ProgressBar.SetBorder(true)
 	progressView.ProgressBar.SetMax(100)

@@ -25,43 +25,12 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
-var (
-	dir           = flag.Bool("dir", false, "Directory with audio files")
-	knowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
-)
+var dir = flag.Bool("dir", false, "Directory with audio files")
 
-func getFiles(dir string) []string {
-	var files []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Fatalln(err)
-		}
-		if contains(knowExtension, filepath.Ext(path)) {
-			file := strings.TrimLeft(strings.Replace(path, dir, "", -1), "/\\")
-			files = append(files, file)
-		}
-		return nil
-	})
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return files
-}
-
-func contains(s [4]string, e string) bool {
-	for _, v := range s {
-		if v == e {
-			return true
-		}
-	}
-	return false
-}
-
-func Run(files []string) {
+func Run(rootPath string) {
 
 	ticker := time.NewTicker(time.Second).C
 
@@ -69,7 +38,7 @@ func Run(files []string) {
 
 	tui := ui.NewTui()
 
-	tui.PopolateTracksList(files)
+	tui.PopolateTracksList(rootPath)
 
 	go player.StartPlayer()
 	go tui.Run()
@@ -102,8 +71,11 @@ func Run(files []string) {
 			tui.Draw()
 		case <-player.Finished:
 			nextTrack := tui.NextTrack()
-			player.TrackToPlay = nextTrack
-			player.Play <- true
+			if nextTrack != "" {
+				player.TrackToPlay = nextTrack
+				player.Play <- true
+			}
+
 		case <-tui.Quit:
 			return
 		case err := <-player.PlayingError:
@@ -122,13 +94,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		if f.IsDir() {
-			files := getFiles(musicDir)
-			if len(files) != 0 {
-				os.Chdir(musicDir)
-				Run(files)
-			} else {
-				log.Fatalln("No audio file found")
-			}
+			Run(musicDir)
 		} else {
 			log.Fatalf("%s is not a directory\n", musicDir)
 		}
@@ -140,13 +106,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		if f.IsDir() {
-			files := getFiles(userDir)
-			if len(files) != 0 {
-				os.Chdir(userDir)
-				Run(files)
-			} else {
-				log.Fatalln("No audio file found")
-			}
+			Run(userDir)
 		} else {
 			log.Fatalf("%s is not a directory\n", userDir)
 		}

@@ -64,7 +64,7 @@ func NewTui() *Tui {
 		SetRows(4, 4).
 		SetColumns(40).
 		AddItem(banner, 0, 0, 12, 3, 3, 3, false).
-		AddItem(t.tracksList.List, 3, 0, 10, 5, 0, 0, true).
+		AddItem(t.tracksList.TreeView, 3, 0, 10, 5, 0, 0, true).
 		AddItem(t.trackInfo.TextView, 3, 5, 10, 6, 0, 0, false).
 		AddItem(t.cmd.TextView, 0, 4, 3, 7, 0, 0, false).
 		AddItem(t.trackProgress, 13, 0, 1, 11, 0, 0, false)
@@ -84,7 +84,11 @@ func (t *Tui) Run() {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
-			t.TrackSelected <- t.tracksList.GetSelectedItemText()
+			trackToPlay := t.tracksList.GetSelectedTrackName()
+			if trackToPlay != "" {
+				t.TrackSelected <- trackToPlay
+				return nil
+			}
 		case tcell.KeyCtrlP:
 			t.Paused <- true
 			return nil
@@ -119,9 +123,9 @@ func (t *Tui) Draw() {
 
 func (t *Tui) setCmdText() {
 	t.cmd.SetText(`
-		[yellow](↑)(↓) Browse Songs
+		[yellow](↑)(↓) Browse Track
 		[yellow] (←)(→) Volume
-		[yellow](Enter) Play Selected Song 
+		[yellow](Enter) Play Selected Track 
 		[yellow](Ctrl+P) Pause/Resume
 		[yellow](Ctrl+Space) Mute[yellow] 
 		[yellow](Ctrl+C) Quit[yellow]`)
@@ -151,8 +155,8 @@ func (t *Tui) SetTrackInfo(info tag.Metadata) {
 	t.trackInfo.SetInfo(text)
 }
 
-func (t *Tui) PopolateTracksList(items []string) {
-	t.tracksList.AddItems(items)
+func (t *Tui) PopolateTracksList(rootPath string) {
+	t.tracksList.AddItems(rootPath)
 }
 
 func (t *Tui) SetProgDur(prog string, dur string, percentage int) {
@@ -165,5 +169,6 @@ func (t *Tui) SetProgDur(prog string, dur string, percentage int) {
 }
 
 func (t *Tui) NextTrack() string {
-	return t.tracksList.NextItem()
+	t.tracksList.NextTrack()
+	return t.tracksList.GetSelectedTrackName()
 }
