@@ -1,4 +1,4 @@
-package ui
+package util
 
 import (
 	"io/ioutil"
@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 )
 
-func getKnowFiles(dir string) []os.FileInfo {
+var KnowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
+
+func GetKnowFiles(dir string) []os.FileInfo {
 	var knowFiles []os.FileInfo
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -15,13 +17,13 @@ func getKnowFiles(dir string) []os.FileInfo {
 	}
 	for _, v := range files {
 		if v.IsDir() {
-			f := getKnowFiles(filepath.Join(dir, v.Name()))
+			f := GetKnowFiles(filepath.Join(dir, v.Name()))
 			if len(f) != 0 {
 				knowFiles = append(knowFiles, v)
 			}
 
 		} else {
-			if contains(knowExtension, filepath.Ext(v.Name())) {
+			if contains(KnowExtension, filepath.Ext(v.Name())) {
 				knowFiles = append(knowFiles, v)
 			}
 		}

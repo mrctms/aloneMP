@@ -1,7 +1,7 @@
-package ui
+package tui
 
 import (
-	"log"
+	"aloneMP/util"
 	"os"
 	"path/filepath"
 
@@ -9,10 +9,9 @@ import (
 	"gitlab.com/tslocum/cview"
 )
 
-var knowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
-
 type TracksList struct {
 	*cview.TreeView
+	allTrack []string
 }
 
 func NewTracksList() *TracksList {
@@ -33,7 +32,7 @@ func (t *TracksList) AddItems(rootPath string) {
 }
 
 func (t *TracksList) popolateTreeView(targetNode *cview.TreeNode, rootPath string) {
-	files := getKnowFiles(rootPath)
+	files := util.GetKnowFiles(rootPath)
 
 	for _, file := range files {
 		node := cview.NewTreeNode(file.Name()).
@@ -43,7 +42,20 @@ func (t *TracksList) popolateTreeView(targetNode *cview.TreeNode, rootPath strin
 			node.SetColor(tcell.ColorRed)
 			t.popolateTreeView(node, filepath.Join(rootPath, file.Name()))
 		}
+		t.internalLoadAllTracks(node)
 		targetNode.AddChild(node)
+	}
+}
+
+func (t *TracksList) internalLoadAllTracks(node *cview.TreeNode) {
+	nodeReference := node.GetReference().(string)
+	file, err := os.Stat(nodeReference)
+	if err != nil {
+		return
+	}
+	if !file.IsDir() {
+		fileName := filepath.Base(nodeReference)
+		t.allTrack = append(t.allTrack, fileName)
 	}
 }
 
@@ -53,7 +65,7 @@ func (t *TracksList) GetSelectedTrackName() string {
 	path := selectedNodeReference.(string)
 	file, err := os.Stat(path)
 	if err != nil {
-		log.Fatalln(err)
+		return ""
 	}
 	if file.IsDir() {
 		return ""
@@ -62,11 +74,24 @@ func (t *TracksList) GetSelectedTrackName() string {
 	}
 }
 
+func (t *TracksList) GetAllTracks() []string {
+	return t.allTrack
+}
+
 func (t *TracksList) NextTrack() {
 	t.TreeView.Transform(cview.TransformNextItem)
 	selectedTrack := t.GetSelectedTrackName()
 	if selectedTrack == "" {
 		t.TreeView.GetCurrentNode().Expand()
 		t.NextTrack()
+	}
+}
+
+func (t *TracksList) PreviousTrack() {
+	t.TreeView.Transform(cview.TransformPreviousItem)
+	selectedTrack := t.GetSelectedTrackName()
+	if selectedTrack == "" {
+		t.TreeView.GetCurrentNode().Expand()
+		t.PreviousTrack()
 	}
 }
