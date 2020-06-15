@@ -3,7 +3,7 @@ package app
 import (
 	"aloneMP/media"
 	"aloneMP/server"
-	"aloneMP/ui"
+	"aloneMP/ui/tui"
 	"fmt"
 	"time"
 
@@ -12,16 +12,17 @@ import (
 
 type App struct {
 	player     media.Player
-	tui        *ui.Tui
+	tui        *tui.MainTui
 	httpServer *server.HttpServer
 }
 
 func NewApp() *App {
 	app := new(App)
 	app.player = media.NewFilePlayer()
-	app.tui = ui.NewTui()
+	app.tui = tui.NewMainTui()
 	app.httpServer = server.NewHttpServer()
 	app.httpServer.PlayerInfo = app.player.Info()
+	app.httpServer.InterfaceInfo = app.tui
 	return app
 }
 
@@ -78,6 +79,15 @@ func (a *App) Run(rootPath string) {
 			nextTrack := a.tui.NextTrack()
 			if nextTrack != "" {
 				a.player.SetTrackToPlay(nextTrack)
+				a.player.Play()
+			}
+		case <-a.httpServer.PreviousTrack:
+			if a.player.Info().IsPlaying() {
+				a.player.Close()
+			}
+			previousTrack := a.tui.PreviousTrack()
+			if previousTrack != "" {
+				a.player.SetTrackToPlay(previousTrack)
 				a.player.Play()
 			}
 		case <-a.httpServer.MuteTrack:
