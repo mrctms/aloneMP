@@ -4,9 +4,15 @@ import (
 	"aloneMP/media"
 	"aloneMP/ui"
 	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 )
+
+type command struct {
+	Send string `json:"send"`
+}
 
 type HttpServer struct {
 	NextTrack     chan bool
@@ -31,20 +37,56 @@ func NewHttpServer() *HttpServer {
 	hs.Status = make(chan bool)
 	return hs
 }
-
-func (h *HttpServer) next(w http.ResponseWriter, req *http.Request) {
-	h.NextTrack <- true
+func (h *HttpServer) command(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	response := map[string]bool{
-		"next": true,
-	}
 
-	j, err := json.Marshal(response)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
+	var response map[string]string
+	var commandToSend *string
+
+	if req.Method == "GET" {
+		query := req.URL.Query()
+		queryString := query.Get("send")
+		commandToSend = &queryString
+		response = make(map[string]string)
+	} else if req.Method == "POST" {
+		var cmd command
+		response = make(map[string]string)
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		err = json.Unmarshal(body, &cmd)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		commandToSend = &cmd.Send
 	}
-	w.Write(j)
+	if response != nil && commandToSend != nil {
+		response["send"] = *commandToSend
+		switch *commandToSend {
+		case "next":
+			h.NextTrack <- true
+		case "previous":
+			h.PreviousTrack <- true
+		case "mute":
+			h.MuteTrack <- true
+		case "up":
+			h.VolumeUp <- true
+		case "down":
+			h.VolumeDown <- true
+		default:
+			response["error"] = fmt.Sprintf("Unknow command %s", *commandToSend)
+		}
+
+		j, err := json.Marshal(response)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		w.Write(j)
+	}
 }
 
 func (h *HttpServer) trackList(w http.ResponseWriter, req *http.Request) {
@@ -61,70 +103,6 @@ func (h *HttpServer) trackList(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Write(j)
 
-}
-
-func (h *HttpServer) previous(w http.ResponseWriter, req *http.Request) {
-	h.PreviousTrack <- true
-	w.Header().Add("Content-Type", "application/json")
-	response := map[string]bool{
-		"previous": true,
-	}
-
-	j, err := json.Marshal(response)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-	w.Write(j)
-}
-
-func (h *HttpServer) pause(w http.ResponseWriter, req *http.Request) {
-	h.PauseTrack <- true
-	w.Header().Add("Content-Type", "application/json")
-	response := map[string]bool{
-		"pause": true,
-	}
-	j, err := json.Marshal(response)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-	w.Write(j)
-}
-func (h *HttpServer) mute(w http.ResponseWriter, req *http.Request) {
-	h.MuteTrack <- true
-	w.Header().Add("Content-Type", "application/json")
-	response := map[string]bool{
-		"mute": true,
-	}
-
-	j, err := json.Marshal(response)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-	w.Write(j)
-}
-func (h *HttpServer) volume(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	query := req.URL.Query()
-	queryString := query.Get("go")
-	if queryString == "up" {
-		h.VolumeUp <- true
-	}
-	if queryString == "down" {
-		h.VolumeDown <- true
-	}
-	response := map[string]string{
-		"volume": queryString,
-	}
-
-	j, err := json.Marshal(response)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-	w.Write(j)
 }
 
 func (h *HttpServer) status(w http.ResponseWriter, req *http.Request) {
@@ -146,12 +124,8 @@ func (h *HttpServer) status(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *HttpServer) ListenAndServe(address string) {
-	http.HandleFunc("/next", h.next)
+	http.HandleFunc("/command", h.command)
 	http.HandleFunc("/tracks", h.trackList)
-	http.HandleFunc("/previous", h.previous)
-	http.HandleFunc("/pause", h.pause)
-	http.HandleFunc("/mute", h.mute)
-	http.HandleFunc("/volume", h.volume)
 	http.HandleFunc("/status", h.status)
 
 	http.ListenAndServe(address, nil)
