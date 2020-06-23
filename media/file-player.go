@@ -89,7 +89,7 @@ func (f *FilePlayer) VolumeUp() {
 }
 
 func (f *FilePlayer) VolumeDown() {
-	f.volumeUp <- true
+	f.volumeDown <- true
 }
 
 func (f *FilePlayer) SetTrackToPlay(track string) {
