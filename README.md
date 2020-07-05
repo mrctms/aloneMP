@@ -1,31 +1,33 @@
 # aloneMP
 
 A minimal music player terminal based.
-(Insipred by <a href="https://github.com/Depado/parakeet">parakeet</a>)
+
+aloneMP is composed of two elements, the daemon (aloneMPd) and the clients, for now is avaiable only the terminal client with a TUI
 
 <img src="demo.gif" alt="demo">
 
-# Download and installation on Linux
+# Download and installation on Debian and friends
 
-Download <a href="https://github.com/marcktomack/aloneMP/releases">here</a>
+You need to have systemd.
 
-Extract the zip
+Download the .deb package <a href="https://github.com/marcktomack/aloneMP/releases">here</a>
 
-```
-cd aloneMP
-chmod +x install.sh
-sudo ./install.sh
-```
+This enable the daemon and install aloneMP
+
+There are also the zip with only the binary if you want to configure all the things manually
+
+I will provide more packages and installation types.
 
 # Usage
 
 ```
-Usage of aloneMP:
+Usage of ./aloneMP:
   -addr string
-        http server address (default "127.0.0.1:3777")
+        aloneMP daemon address (default "127.0.0.1:3777")
   -dir string
         Directory with audio files (default "~/Music")
-  -s    Run the http server
+  -tui
+        run tui client (default true)
 
 ```
 
@@ -35,23 +37,10 @@ You can pass a directory with audio files:
 
 Or by default it will load audio files from `~/Music`
 
-You can also run the http server with -s and pass the address with -addr (default is 127.0.0.1:3777)
+You need to provide the daemon http server address the default one is 127.0.0.1:3777, same on the daemon
 
 Docs for http server and http server it self is under construction
 
 Supported formats are <b>MP3</b>, <b>FLAC</b>, <b>OGG</b> and <b>WAV</b>
 
-# Build from source
-
-You need a <a href="https://golang.org/dl/">Go compiler</a>
-
-```
-git clone https://github.com/MarckTomack/aloneMP
-cd aloneMP
-go build
-```
-
-# Depndencies
-
-aloneMP uses <a href="https://github.com/faiface/beep">beep</a> that uses <a href="https://github.com/hajimehoshi/oto">oto</a> see the dependencies <a href="https://github.com/hajimehoshi/oto#prerequisite">here</a>
 
