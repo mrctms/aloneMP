@@ -146,13 +146,10 @@ func (f *FilePlayer) VolumeDown() {
 	f.volumeDown <- true
 }
 
-func (f *FilePlayer) SetTrackToPlay(track interface{}) {
-	t, ok := track.(string)
-	if ok {
-		for _, v := range f.trackList {
-			if v == t {
-				f.trackToPlay = t
-			}
+func (f *FilePlayer) SetTrackToPlay(track string) {
+	for _, v := range f.trackList {
+		if v == track {
+			f.trackToPlay = track
 		}
 	}
 

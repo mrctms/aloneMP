@@ -8,6 +8,6 @@ type Player interface {
 	Mute()
 	VolumeUp()
 	VolumeDown()
-	SetTrackToPlay(track interface{})
+	SetTrackToPlay(track string)
 	Info() PlayerInformer
 }
