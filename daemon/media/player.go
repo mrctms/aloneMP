@@ -1,15 +1,13 @@
 package media
 
 type Player interface {
-	Start()
+	Start(source string)
 	Close()
-	PlayingError() chan error
 	Pause()
 	Play()
 	Mute()
 	VolumeUp()
 	VolumeDown()
-	SetTrackToPlay(track string)
+	SetTrackToPlay(track interface{})
 	Info() PlayerInformer
-	Finished() chan bool
 }

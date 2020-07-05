@@ -1,0 +1,10 @@
+[Unit]
+Description=aloneMPd
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/aloneMPd
+
+
+[Install]
+WantedBy = multi-user.target

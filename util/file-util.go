@@ -9,7 +9,24 @@ import (
 
 var KnowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
 
-func GetKnowFiles(dir string) []os.FileInfo {
+func GetKnowFiles(dir string) []string {
+	var knowFiles []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if path != dir {
+			if contains(KnowExtension, filepath.Ext(path)) {
+				knowFiles = append(knowFiles, path)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return knowFiles
+}
+
+func GetKnowFilesInfo(dir string) []os.FileInfo {
 	var knowFiles []os.FileInfo
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
