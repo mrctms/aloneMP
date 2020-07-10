@@ -50,7 +50,7 @@ func main() {
 			case track := <-httpServer.SelectedTrack:
 				if player != nil {
 					if player.Info().IsPlaying() {
-						player.Close()
+						player.Clear()
 					}
 					player.SetTrackToPlay(track)
 					player.Play()
@@ -58,7 +58,7 @@ func main() {
 			case <-httpServer.NextTrack:
 				if player != nil {
 					if player.Info().IsPlaying() {
-						player.Close()
+						player.Clear()
 					}
 					nextTrack := player.Info().NextTrack()
 					if nextTrack != "" {
@@ -69,7 +69,7 @@ func main() {
 			case <-httpServer.PreviousTrack:
 				if player != nil {
 					if player.Info().IsPlaying() {
-						player.Close()
+						player.Clear()
 					}
 					previousTrack := player.Info().PreviousTrack()
 					if previousTrack != "" {

@@ -159,12 +159,21 @@ func (f *FilePlayer) Info() PlayerInformer {
 	return f.informer
 }
 
-func (f *FilePlayer) Close() {
-	f.streamer.Close()
+func (f *FilePlayer) Clear() {
 	f.format.SampleRate = 0
-	speaker.Clear()
 	f.terminateCurrentTrack = true
 	f.informer.playing = false
+	f.streamer.Close()
+	speaker.Clear()
+}
+
+func (f *FilePlayer) Close() {
+	f.format.SampleRate = 0
+	f.terminateCurrentTrack = true
+	f.informer.playing = false
+	f.streamer.Close()
+	speaker.Clear()
+	speaker.Close()
 }
 
 func (f *FilePlayer) loadStreamerAndFormat(file string) error {
