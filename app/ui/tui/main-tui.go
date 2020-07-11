@@ -123,7 +123,7 @@ func (t *MainTui) SetTrackInfo(info *util.TrackInfo) {
 			"[blue]AlbumArtist:[white] \n%s\n"+
 			"[blue]Composer:[white] \n%s\n"+
 			"[blue]Genre:[white] \n%s\n"+
-			"[blue]Year:[white] \n%d\n", info.Title, info.Artist, info.Album, info.AlbumArtist, info.Composer, info.Genre, info.Year)
+			"[blue]Year:[white] \n%d\n", info.Title, info.Album, info.Artist, info.AlbumArtist, info.Composer, info.Genre, info.Year)
 	} else {
 		text = "[blue]Title: \n\n" +
 			"[blue]Album: \n\n" +
