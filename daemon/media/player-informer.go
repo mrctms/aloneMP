@@ -1,11 +1,13 @@
 package media
 
+import "util"
+
 type PlayerInformer interface {
 	CurrentVolume() float64
 	IsPlaying() bool
 	IsPaused() bool
 	IsMuted() bool
-	TrackInfo() *TrackInfo
+	TrackInfo() *util.TrackInfo
 	PlayingTrack() string
 	TrackList() []string
 	NextTrack() string
@@ -14,10 +16,4 @@ type PlayerInformer interface {
 	Duration() string
 	Progress() string
 	InError() bool
-}
-
-type TrackInfo struct {
-	Title  string `json:"title"`
-	Artist string `json:"artist"`
-	Album  string `json:"album"`
 }

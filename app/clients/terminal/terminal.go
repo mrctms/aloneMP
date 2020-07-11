@@ -25,6 +25,7 @@ func (t *TerminalClient) SetSender(sender senders.Sender) {
 
 func (t *TerminalClient) Run(rootDir string) {
 	ticker := time.NewTicker(time.Second).C
+	aliveTicker := time.NewTicker(time.Second * 10).C
 	defer func() {
 		t.mainTui.Stop()
 		t.sender.ShutDown()
@@ -45,12 +46,13 @@ func (t *TerminalClient) Run(rootDir string) {
 			t.sender.VolumeUp()
 		case <-t.mainTui.VolumeDown:
 			t.sender.VolumeDown()
-		case <-ticker:
+		case <-aliveTicker:
 			if !t.sender.IsAlive() {
 				t.mainTui.Stop()
 				fmt.Println("aloneMPd is not alive")
 				return
 			}
+		case <-ticker:
 			info, ok := t.sender.TrackInfo().(senders.StatusResponse)
 			if ok {
 				if info.InError {
@@ -63,7 +65,7 @@ func (t *TerminalClient) Run(rootDir string) {
 					}
 				}
 				t.mainTui.SetProgDur(info.Progress, info.Duration, info.Length)
-				t.mainTui.SetTrackInfo(info.TrackInfo.Title, info.TrackInfo.Artist, info.TrackInfo.Album)
+				t.mainTui.SetTrackInfo(info.TrackInfo)
 			}
 			t.mainTui.Draw()
 		case <-t.mainTui.Quit:

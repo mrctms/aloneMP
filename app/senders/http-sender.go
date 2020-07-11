@@ -11,18 +11,12 @@ import (
 )
 
 type StatusResponse struct {
-	TrackInfo trackInfo
+	TrackInfo *util.TrackInfo
 	Progress  string `json:"progress"`
 	Length    int    `json:"length"`
 	Duration  string `json:"duration"`
 	IsPlaying bool   `json:"isPlaying"`
 	InError   bool   `json:"inError"`
-}
-
-type trackInfo struct {
-	Title  string `json:"title"`
-	Artist string `json:"artist"`
-	Album  string `json:"album"`
 }
 
 type HttpSender struct {
@@ -57,17 +51,15 @@ func (h *HttpSender) NextTrack() {
 	}
 	h.logger.Write(fmt.Sprintf("send next track %s", res.Status))
 }
-func (h *HttpSender) Play(track interface{}) {
-	trackToPlay, ok := track.(string)
-	if ok {
-		req := fmt.Sprintf("%s/command?send=play&track=%s", h.baseUrl, url.QueryEscape(trackToPlay))
-		res, err := http.Get(req)
-		if err != nil {
-			h.logger.Write(fmt.Sprintf("error on play track: %v", err))
-			return
-		}
-		h.logger.Write(fmt.Sprintf("send play track %s", res.Status))
+func (h *HttpSender) Play(track string) {
+	req := fmt.Sprintf("%s/command?send=play&track=%s", h.baseUrl, url.QueryEscape(track))
+	res, err := http.Get(req)
+	if err != nil {
+		h.logger.Write(fmt.Sprintf("error on play track: %v", err))
+		return
 	}
+	h.logger.Write(fmt.Sprintf("send play track %s", res.Status))
+
 }
 
 func (h *HttpSender) PreviousTrack() {

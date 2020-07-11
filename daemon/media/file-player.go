@@ -188,11 +188,17 @@ func (f *FilePlayer) loadStreamerAndFormat(file string) error {
 	if err != nil {
 		trackInfo = nil
 	}
+	playerTrackInfo := new(util.TrackInfo)
 	if trackInfo != nil {
-		f.informer.info = &TrackInfo{Title: trackInfo.Title(), Album: trackInfo.Album(), Artist: trackInfo.Artist()}
-	} else {
-		f.informer.info = &TrackInfo{Title: "", Album: "", Artist: ""}
+		playerTrackInfo.Title = trackInfo.Title()
+		playerTrackInfo.Artist = trackInfo.Artist()
+		playerTrackInfo.Album = trackInfo.Album()
+		playerTrackInfo.AlbumArtist = trackInfo.AlbumArtist()
+		playerTrackInfo.Composer = trackInfo.Composer()
+		playerTrackInfo.Genre = trackInfo.Genre()
+		playerTrackInfo.Year = trackInfo.Year()
 	}
+	f.informer.info = playerTrackInfo
 
 	ex := filepath.Ext(f.fileToPlay.Name())
 	switch ex {
@@ -279,7 +285,7 @@ type filePlayerInfo struct {
 	playing       bool
 	paused        bool
 	muted         bool
-	info          *TrackInfo
+	info          *util.TrackInfo
 	length        int
 	dur           string
 	prog          string
@@ -306,7 +312,7 @@ func (f *filePlayerInfo) IsMuted() bool {
 	return f.muted
 }
 
-func (f *filePlayerInfo) TrackInfo() *TrackInfo {
+func (f *filePlayerInfo) TrackInfo() *util.TrackInfo {
 	return f.info
 }
 

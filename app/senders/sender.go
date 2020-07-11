@@ -7,7 +7,7 @@ type Sender interface {
 	Pause()
 	VolumeUp()
 	VolumeDown()
-	Play(track interface{})
+	Play(track string)
 	TrackInfo() interface{}
 	ShutDown()
 	Initialize(source string)

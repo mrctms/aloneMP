@@ -2,7 +2,7 @@ package tui
 
 import (
 	"fmt"
-	"log"
+	"util"
 
 	"github.com/gdamore/tcell"
 	"gitlab.com/tslocum/cview"
@@ -62,7 +62,7 @@ func NewMainTui() *MainTui {
 	return t
 }
 
-func (t *MainTui) Run() {
+func (t *MainTui) Run() error {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
@@ -91,8 +91,9 @@ func (t *MainTui) Run() {
 	})
 	err := t.app.Run()
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 func (t *MainTui) Stop() {
@@ -113,10 +114,26 @@ func (t *MainTui) setCmdText() {
 		[yellow](Ctrl+C) Quit[yellow]`)
 }
 
-func (t *MainTui) SetTrackInfo(title string, artist string, album string) {
-	text := fmt.Sprintf("[blue]Title: [white] \n%s\n"+
-		"[blue]Album: [white] \n%s\n"+
-		"[blue]Artist: [white] \n%s\n", title, artist, album)
+func (t *MainTui) SetTrackInfo(info *util.TrackInfo) {
+	var text string
+	if info != nil {
+		text = fmt.Sprintf("[blue]Title:[white] \n%s\n"+
+			"[blue]Album:[white] \n%s\n"+
+			"[blue]Artist:[white] \n%s\n"+
+			"[blue]AlbumArtist:[white] \n%s\n"+
+			"[blue]Composer:[white] \n%s\n"+
+			"[blue]Genre:[white] \n%s\n"+
+			"[blue]Year:[white] \n%d\n", info.Title, info.Artist, info.Album, info.AlbumArtist, info.Composer, info.Genre, info.Year)
+	} else {
+		text = "[blue]Title: \n\n" +
+			"[blue]Album: \n\n" +
+			"[blue]Artist: \n\n" +
+			"[blue]AlbumArtist: \n\n" +
+			"[blue]Composer: \n\n" +
+			"[blue]Genre: \n\n" +
+			"[blue]Year: \n\n"
+	}
+
 	t.trackInfo.SetInfo(text)
 }
 
