@@ -16,7 +16,7 @@ import (
 var dir *string
 var address = flag.String("addr", "127.0.0.1:3777", "aloneMP daemon address")
 var tui = flag.Bool("tui", true, "run tui client")
-var srv = flag.String("srv", "tcp", "aloneMPd server type")
+var srv = flag.String("srv", "tcp", "aloneMP daemon server type")
 var ver = flag.Bool("version", false, "show version")
 
 var version string

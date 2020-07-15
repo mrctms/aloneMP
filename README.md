@@ -21,13 +21,17 @@ I will provide more packages and installation types.
 # Usage
 
 ```
-Usage of ./aloneMP:
+Usage of aloneMP:
   -addr string
         aloneMP daemon address (default "127.0.0.1:3777")
   -dir string
         Directory with audio files (default "~/Music")
+  -srv string
+        aloneMP daemon server type (default "tcp")
   -tui
         run tui client (default true)
+  -version
+        show version
 
 ```
 
@@ -37,9 +41,9 @@ You can pass a directory with audio files:
 
 Or by default it will load audio files from `~/Music`
 
-You need to provide the daemon http server address the default one is 127.0.0.1:3777, same on the daemon
+You need to provide the daemon server type and the address, the default one is 127.0.0.1:3777, same on the daemon
 
-Docs for http server and http server it self is under construction
+Docs for servers and servers it self is under construction
 
 Supported formats are <b>MP3</b>, <b>FLAC</b>, <b>OGG</b> and <b>WAV</b>
 
