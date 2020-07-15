@@ -5,6 +5,7 @@ import (
 	"aloneMP/ui/tui"
 	"fmt"
 	"time"
+	"util"
 )
 
 type TerminalClient struct {
@@ -53,7 +54,7 @@ func (t *TerminalClient) Run(rootDir string) {
 				return
 			}
 		case <-ticker:
-			info, ok := t.sender.TrackInfo().(senders.StatusResponse)
+			info, ok := t.sender.TrackInfo().(util.StatusResponse)
 			if ok {
 				if info.InError {
 					t.mainTui.NextTrack()

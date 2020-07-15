@@ -11,6 +11,7 @@ import (
 )
 
 var address = flag.String("addr", "127.0.0.1:3777", "address")
+var srv = flag.String("srv", "tcp", "server type")
 var version string
 var ver = flag.Bool("version", false, "show version")
 
@@ -27,27 +28,36 @@ func main() {
 			defer s.TryUnlock()
 		}
 		var player *media.FilePlayer
-		httpServer := server.NewHttpServer()
+		var listener server.ServerListener
 
-		go httpServer.ListenAndServe(*address)
+		defer func() {
+			if player != nil {
+				if player.Info().IsPlaying() {
+					player.Close()
+				}
+			}
+
+		}()
+
+		if *srv == "tcp" {
+			listener = server.NewTcpServer()
+		} else if *srv == "http" {
+			listener = server.NewHttpServer()
+		}
+
+		go listener.Listen(*address)
 
 		for {
 			select {
-			case dir := <-httpServer.Source:
+			case dir := <-listener.Source():
 				var err error
 				player, err = media.NewFilePlayer()
 				if err != nil {
-					log.Fatalln(err)
+					return
 				}
-				httpServer.PlayerInfo = player.Info()
-
-				defer func() {
-					if player.Info().IsPlaying() {
-						player.Close()
-					}
-				}()
+				listener.SetPlayerInfo(player.Info())
 				go player.Start(dir)
-			case track := <-httpServer.SelectedTrack:
+			case track := <-listener.SelectedTrack():
 				if player != nil {
 					if player.Info().IsPlaying() {
 						player.Clear()
@@ -55,7 +65,7 @@ func main() {
 					player.SetTrackToPlay(track)
 					player.Play()
 				}
-			case <-httpServer.NextTrack:
+			case <-listener.NextTrack():
 				if player != nil {
 					if player.Info().IsPlaying() {
 						player.Clear()
@@ -66,7 +76,7 @@ func main() {
 						player.Play()
 					}
 				}
-			case <-httpServer.PreviousTrack:
+			case <-listener.PreviousTrack():
 				if player != nil {
 					if player.Info().IsPlaying() {
 						player.Clear()
@@ -77,23 +87,23 @@ func main() {
 						player.Play()
 					}
 				}
-			case <-httpServer.MuteTrack:
+			case <-listener.MuteTrack():
 				if player != nil {
 					player.Mute()
 				}
-			case <-httpServer.PauseTrack:
+			case <-listener.PauseTrack():
 				if player != nil {
 					player.Pause()
 				}
-			case <-httpServer.VolumeUp:
+			case <-listener.VolumeUp():
 				if player != nil {
 					player.VolumeUp()
 				}
-			case <-httpServer.VolumeDown:
+			case <-listener.VolumeDown():
 				if player != nil {
 					player.VolumeDown()
 				}
-			case <-httpServer.ShutDown:
+			case <-listener.ShutDown():
 				if player != nil {
 					if player.Info().IsPlaying() {
 						player.Close()

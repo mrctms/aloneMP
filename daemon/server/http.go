@@ -3,41 +3,87 @@ package server
 import (
 	"aloneMPd/media"
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
-type command struct {
-	Send  string `json:"send"`
-	Track string `json:"track"`
+type HttpServer struct {
+	nextTrack     chan bool
+	previousTrack chan bool
+	pauseTrack    chan bool
+	muteTrack     chan bool
+	volumeUp      chan bool
+	volumeDown    chan bool
+	status        chan bool
+	shutDown      chan bool
+	selectedTrack chan string
+	source        chan string
+	playerInfo    media.PlayerInformer
 }
 
-type HttpServer struct {
-	NextTrack     chan bool
-	PreviousTrack chan bool
-	PauseTrack    chan bool
-	MuteTrack     chan bool
-	VolumeUp      chan bool
-	VolumeDown    chan bool
-	Status        chan bool
-	ShutDown      chan bool
-	SelectedTrack chan string
-	Source        chan string
-	PlayerInfo    media.PlayerInformer
+func (h *HttpServer) Listen(address string) error {
+	http.HandleFunc("/command", h.command)
+	http.HandleFunc("/tracks", h.trackList)
+	http.HandleFunc("/status", h.statusHandler)
+
+	return http.ListenAndServe(address, nil)
+}
+
+func (h *HttpServer) NextTrack() chan bool {
+	return h.nextTrack
+}
+
+func (h *HttpServer) PreviousTrack() chan bool {
+	return h.previousTrack
+}
+
+func (h *HttpServer) PauseTrack() chan bool {
+	return h.pauseTrack
+}
+
+func (h *HttpServer) MuteTrack() chan bool {
+	return h.muteTrack
+}
+
+func (h *HttpServer) VolumeUp() chan bool {
+	return h.volumeUp
+}
+
+func (h *HttpServer) VolumeDown() chan bool {
+	return h.volumeDown
+}
+
+func (h *HttpServer) ShutDown() chan bool {
+	return h.shutDown
+}
+
+func (h *HttpServer) SelectedTrack() chan string {
+	return h.selectedTrack
+}
+
+func (h *HttpServer) Source() chan string {
+	return h.source
+}
+
+func (h *HttpServer) SetPlayerInfo(info media.PlayerInformer) {
+	h.playerInfo = info
+}
+
+func (h *HttpServer) PlayerInfo() media.PlayerInformer {
+	return h.playerInfo
 }
 
 func NewHttpServer() *HttpServer {
 	hs := new(HttpServer)
-	hs.NextTrack = make(chan bool)
-	hs.PreviousTrack = make(chan bool)
-	hs.PauseTrack = make(chan bool)
-	hs.MuteTrack = make(chan bool)
-	hs.VolumeUp = make(chan bool)
-	hs.VolumeDown = make(chan bool)
-	hs.Status = make(chan bool)
-	hs.SelectedTrack = make(chan string)
-	hs.ShutDown = make(chan bool)
-	hs.Source = make(chan string)
+	hs.nextTrack = make(chan bool)
+	hs.previousTrack = make(chan bool)
+	hs.pauseTrack = make(chan bool)
+	hs.muteTrack = make(chan bool)
+	hs.volumeUp = make(chan bool)
+	hs.volumeDown = make(chan bool)
+	hs.status = make(chan bool)
+	hs.selectedTrack = make(chan string)
+	hs.shutDown = make(chan bool)
+	hs.source = make(chan string)
 	return hs
 }
 
@@ -65,23 +111,23 @@ func (h *HttpServer) command(w http.ResponseWriter, req *http.Request) {
 		response["send"] = *commandToSend
 		switch *commandToSend {
 		case "next":
-			h.NextTrack <- true
+			h.nextTrack <- true
 		case "previous":
-			h.PreviousTrack <- true
+			h.previousTrack <- true
 		case "mute":
-			h.MuteTrack <- true
+			h.muteTrack <- true
 		case "pause":
-			h.PauseTrack <- true
+			h.pauseTrack <- true
 		case "up":
-			h.VolumeUp <- true
+			h.volumeUp <- true
 		case "down":
-			h.VolumeDown <- true
+			h.volumeDown <- true
 		case "play":
-			h.SelectedTrack <- *track
+			h.selectedTrack <- *track
 		case "shutdown":
-			h.ShutDown <- true
+			h.shutDown <- true
 		case "init":
-			h.Source <- *source
+			h.source <- *source
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -99,12 +145,12 @@ func (h *HttpServer) command(w http.ResponseWriter, req *http.Request) {
 
 func (h *HttpServer) trackList(w http.ResponseWriter, req *http.Request) {
 
-	if h.PlayerInfo == nil {
+	if h.playerInfo == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if req.Method == "GET" {
-		list := h.PlayerInfo.TrackList()
+		list := h.playerInfo.TrackList()
 		w.Header().Add("Content-Type", "application/json")
 		response := map[string][]string{
 			"trackList": list,
@@ -122,24 +168,24 @@ func (h *HttpServer) trackList(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (h *HttpServer) status(w http.ResponseWriter, req *http.Request) {
+func (h *HttpServer) statusHandler(w http.ResponseWriter, req *http.Request) {
 
-	if h.PlayerInfo == nil {
+	if h.playerInfo == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if req.Method == "GET" {
 		w.Header().Add("Content-Type", "application/json")
 		response := map[string]interface{}{
-			"isPlaying": h.PlayerInfo.IsPlaying(),
-			"isPaused":  h.PlayerInfo.IsPaused(),
-			"isMuted":   h.PlayerInfo.IsMuted(),
-			"track":     h.PlayerInfo.PlayingTrack(),
-			"progress":  h.PlayerInfo.Progress(),
-			"length":    h.PlayerInfo.TrackLength(),
-			"duration":  h.PlayerInfo.Duration(),
-			"trackInfo": h.PlayerInfo.TrackInfo(),
-			"inError":   h.PlayerInfo.InError(),
+			"isPlaying": h.playerInfo.IsPlaying(),
+			"isPaused":  h.playerInfo.IsPaused(),
+			"isMuted":   h.playerInfo.IsMuted(),
+			"track":     h.playerInfo.PlayingTrack(),
+			"progress":  h.playerInfo.Progress(),
+			"length":    h.playerInfo.TrackLength(),
+			"duration":  h.playerInfo.Duration(),
+			"trackInfo": h.playerInfo.TrackInfo(),
+			"inError":   h.playerInfo.InError(),
 		}
 
 		j, err := json.Marshal(response)
@@ -151,14 +197,5 @@ func (h *HttpServer) status(w http.ResponseWriter, req *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-
-}
-
-func (h *HttpServer) ListenAndServe(address string) {
-	http.HandleFunc("/command", h.command)
-	http.HandleFunc("/tracks", h.trackList)
-	http.HandleFunc("/status", h.status)
-
-	log.Fatalln(http.ListenAndServe(address, nil))
 
 }

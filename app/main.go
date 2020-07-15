@@ -16,6 +16,7 @@ import (
 var dir *string
 var address = flag.String("addr", "127.0.0.1:3777", "aloneMP daemon address")
 var tui = flag.Bool("tui", true, "run tui client")
+var srv = flag.String("srv", "tcp", "aloneMPd server type")
 var ver = flag.Bool("version", false, "show version")
 
 var version string
@@ -40,16 +41,26 @@ func main() {
 			defer s.TryUnlock()
 		}
 
-		httpSender, err := senders.NewHttpSender(*address)
-		if err != nil {
-			log.Fatalln(err)
-		}
 		var client clients.Clienter
+		var sender senders.Sender
+
+		if *srv == "tcp" {
+			sender, err = senders.NewTcpSender(*address)
+			if err != nil {
+				return
+			}
+		} else if *srv == "http" {
+			sender, err = senders.NewHttpSender(*address)
+			if err != nil {
+				return
+			}
+		}
+
 		if *tui {
 			client = terminal.NewTerminalClient()
 		}
 
-		client.SetSender(httpSender)
+		client.SetSender(sender)
 		client.Run(*dir)
 	}
 

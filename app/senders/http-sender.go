@@ -10,15 +10,6 @@ import (
 	"util"
 )
 
-type StatusResponse struct {
-	TrackInfo *util.TrackInfo
-	Progress  string `json:"progress"`
-	Length    int    `json:"length"`
-	Duration  string `json:"duration"`
-	IsPlaying bool   `json:"isPlaying"`
-	InError   bool   `json:"inError"`
-}
-
 type HttpSender struct {
 	baseUrl string
 	logger  *util.Logger
@@ -113,7 +104,7 @@ func (h *HttpSender) VolumeDown() {
 }
 
 func (h *HttpSender) TrackInfo() interface{} {
-	var info StatusResponse
+	var info util.StatusResponse
 
 	req := fmt.Sprintf("%s/status", h.baseUrl)
 	res, err := http.Get(req)
