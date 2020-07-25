@@ -23,7 +23,7 @@ I will provide more packages and installation types.
 ```
 Usage of aloneMP:
   -addr string
-        aloneMP daemon address (default "127.0.0.1:3777")
+        aloneMP daemon address (default "hostname:3777")
   -dir string
         Directory with audio files (default "~/Music")
   -srv string
@@ -41,7 +41,7 @@ You can pass a directory with audio files:
 
 Or by default it will load audio files from `~/Music`
 
-You need to provide the daemon server type and the address, the default one is 127.0.0.1:3777, same on the daemon
+You need to provide the daemon server type and the address, the default one is hostname:3777, same on the daemon
 
 Docs for servers and servers it self is under construction
 
