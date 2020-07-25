@@ -102,7 +102,7 @@ func (t *TcpSender) Play(track string) {
 	t.conn.Write(jsonMsg)
 }
 
-func (t *TcpSender) TrackInfo() interface{} {
+func (t *TcpSender) TrackInfo() *util.StatusResponse {
 	msg := &util.TcpMessage{Command: "status"}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -116,7 +116,7 @@ func (t *TcpSender) TrackInfo() interface{} {
 	var res util.StatusResponse
 
 	decoder.Decode(&res)
-	return res
+	return &res
 }
 
 func (t *TcpSender) ShutDown() {

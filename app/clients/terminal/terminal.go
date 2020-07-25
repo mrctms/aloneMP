@@ -5,7 +5,6 @@ import (
 	"aloneMP/ui/tui"
 	"fmt"
 	"time"
-	"util"
 )
 
 type TerminalClient struct {
@@ -54,20 +53,18 @@ func (t *TerminalClient) Run(rootDir string) {
 				return
 			}
 		case <-ticker:
-			info, ok := t.sender.TrackInfo().(util.StatusResponse)
-			if ok {
-				if info.InError {
+			info := t.sender.TrackInfo()
+			if info.InError {
+				t.mainTui.NextTrack()
+				t.sender.Play(t.mainTui.CurrentTrack())
+			} else if !info.IsPlaying {
+				if (info.Duration == info.Progress) && (info.Length != 0) {
 					t.mainTui.NextTrack()
 					t.sender.Play(t.mainTui.CurrentTrack())
-				} else if !info.IsPlaying {
-					if (info.Duration == info.Progress) && (info.Length != 0) {
-						t.mainTui.NextTrack()
-						t.sender.Play(t.mainTui.CurrentTrack())
-					}
 				}
-				t.mainTui.SetProgDur(info.Progress, info.Duration, info.Length)
-				t.mainTui.SetTrackInfo(info.TrackInfo)
 			}
+			t.mainTui.SetProgDur(info.Progress, info.Duration, info.Length)
+			t.mainTui.SetTrackInfo(info.TrackInfo)
 			t.mainTui.Draw()
 		case <-t.mainTui.Quit:
 			return

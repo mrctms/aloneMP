@@ -103,7 +103,7 @@ func (h *HttpSender) VolumeDown() {
 	h.logger.Write(fmt.Sprintf("send volume down %s", res.Status))
 }
 
-func (h *HttpSender) TrackInfo() interface{} {
+func (h *HttpSender) TrackInfo() *util.StatusResponse {
 	var info util.StatusResponse
 
 	req := fmt.Sprintf("%s/status", h.baseUrl)
@@ -121,7 +121,7 @@ func (h *HttpSender) TrackInfo() interface{} {
 		}
 
 	}
-	return info
+	return &info
 }
 func (h *HttpSender) ShutDown() {
 	req := fmt.Sprintf("%s/command?send=shutdown", h.baseUrl)
