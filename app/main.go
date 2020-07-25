@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"os/user"
 	"path/filepath"
 
@@ -14,7 +15,8 @@ import (
 )
 
 var dir *string
-var address = flag.String("addr", "127.0.0.1:3777", "aloneMP daemon address")
+var address *string
+
 var tui = flag.Bool("tui", true, "run tui client")
 var srv = flag.String("srv", "tcp", "aloneMP daemon server type")
 var ver = flag.Bool("version", false, "show version")
@@ -26,8 +28,13 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	musicDir := filepath.Join(u.HomeDir, "Music")
 	dir = flag.String("dir", musicDir, "Directory with audio files")
+	address = flag.String("addr", fmt.Sprintf("%s:3777", hostname), "aloneMP daemon address")
 	flag.Parse()
 
 	if *ver {

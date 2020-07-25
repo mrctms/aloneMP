@@ -6,16 +6,24 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/marcsauter/single"
 )
 
-var address = flag.String("addr", "127.0.0.1:3777", "address")
+var address *string
+
 var srv = flag.String("srv", "tcp", "server type")
 var version string
 var ver = flag.Bool("version", false, "show version")
 
 func main() {
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	address = flag.String("addr", fmt.Sprintf("%s:3777", hostname), "address")
+
 	flag.Parse()
 	if *ver {
 		fmt.Printf("\naloneMPd version: %s\n\n", version)
