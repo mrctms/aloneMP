@@ -18,7 +18,6 @@ var dir *string
 var address *string
 
 var tui = flag.Bool("tui", true, "run tui client")
-var srv = flag.String("srv", "tcp", "aloneMP daemon server type")
 var ver = flag.Bool("version", false, "show version")
 
 var version string
@@ -49,18 +48,9 @@ func main() {
 		}
 
 		var client clients.Clienter
-		var sender senders.Sender
-
-		if *srv == "tcp" {
-			sender, err = senders.NewTcpSender(*address)
-			if err != nil {
-				return
-			}
-		} else if *srv == "http" {
-			sender, err = senders.NewHttpSender(*address)
-			if err != nil {
-				return
-			}
+		sender, err := senders.NewTcpSender(*address)
+		if err != nil {
+			log.Fatalln(err)
 		}
 
 		if *tui {

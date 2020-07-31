@@ -12,9 +12,8 @@ import (
 )
 
 var address *string
-
-var srv = flag.String("srv", "tcp", "server type")
 var version string
+
 var ver = flag.Bool("version", false, "show version")
 
 func main() {
@@ -36,7 +35,6 @@ func main() {
 			defer s.TryUnlock()
 		}
 		var player *media.FilePlayer
-		var listener server.ServerListener
 
 		defer func() {
 			if player != nil {
@@ -46,12 +44,7 @@ func main() {
 			}
 
 		}()
-
-		if *srv == "tcp" {
-			listener = server.NewTcpServer()
-		} else if *srv == "http" {
-			listener = server.NewHttpServer()
-		}
+		listener := server.NewTcpServer()
 
 		go listener.Listen(*address)
 
