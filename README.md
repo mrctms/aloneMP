@@ -26,8 +26,6 @@ Usage of aloneMP:
         aloneMP daemon address (default "hostname:3777")
   -dir string
         Directory with audio files (default "~/Music")
-  -srv string
-        aloneMP daemon server type (default "tcp")
   -tui
         run tui client (default true)
   -version
@@ -41,10 +39,17 @@ You can pass a directory with audio files:
 
 Or by default it will load audio files from `~/Music`
 
-You need to provide the daemon server type and the address, the default one is hostname:3777, same on the daemon
-
-Docs for servers and servers it self is under construction
+You need to provide the daemon server address, the default one is hostname:3777, same on the daemon
 
 Supported formats are <b>MP3</b>, <b>FLAC</b>, <b>OGG</b> and <b>WAV</b>
+
+# TODO
+
+- Web interface
+
+Since I'm not a UI guy, if anyone want make a web interface for aloneMP are welcome!<br>
+I already have a basic API server on my branch.
+
+Drop me an email before start the work.
 
 
