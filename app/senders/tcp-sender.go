@@ -33,7 +33,7 @@ func NewTcpSender(address string) (*TcpSender, error) {
 }
 
 func (t *TcpSender) NextTrack() {
-	msg := &util.TcpMessage{Command: "next"}
+	msg := &util.ServerMessage{Command: util.NEXT_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send next track message %v", err))
@@ -43,7 +43,7 @@ func (t *TcpSender) NextTrack() {
 }
 
 func (t *TcpSender) PreviousTrack() {
-	msg := &util.TcpMessage{Command: "previous"}
+	msg := &util.ServerMessage{Command: util.PREVIOUS_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send previous track message %v", err))
@@ -53,7 +53,7 @@ func (t *TcpSender) PreviousTrack() {
 }
 
 func (t *TcpSender) Mute() {
-	msg := &util.TcpMessage{Command: "mute"}
+	msg := &util.ServerMessage{Command: util.MUTE_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send mute message %v", err))
@@ -63,7 +63,7 @@ func (t *TcpSender) Mute() {
 }
 
 func (t *TcpSender) Pause() {
-	msg := &util.TcpMessage{Command: "pause"}
+	msg := &util.ServerMessage{Command: util.PAUSE_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send pause message %v", err))
@@ -73,7 +73,7 @@ func (t *TcpSender) Pause() {
 }
 
 func (t *TcpSender) VolumeUp() {
-	msg := &util.TcpMessage{Command: "volumeUp"}
+	msg := &util.ServerMessage{Command: util.VOLUME_UP_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send volume up message %v", err))
@@ -83,7 +83,7 @@ func (t *TcpSender) VolumeUp() {
 }
 
 func (t *TcpSender) VolumeDown() {
-	msg := &util.TcpMessage{Command: "volumeDown"}
+	msg := &util.ServerMessage{Command: util.VOLUME_DOWN_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send volume down message %v", err))
@@ -93,7 +93,7 @@ func (t *TcpSender) VolumeDown() {
 }
 
 func (t *TcpSender) Play(track string) {
-	msg := &util.TcpMessage{Command: "play", Track: track}
+	msg := &util.ServerMessage{Command: util.PLAY_COMMAND, Track: track}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send play track message %v", err))
@@ -103,7 +103,7 @@ func (t *TcpSender) Play(track string) {
 }
 
 func (t *TcpSender) TrackInfo() *util.StatusResponse {
-	msg := &util.TcpMessage{Command: "status"}
+	msg := &util.ServerMessage{Command: "status"}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send status message %v", err))
@@ -120,7 +120,7 @@ func (t *TcpSender) TrackInfo() *util.StatusResponse {
 }
 
 func (t *TcpSender) ShutDown() {
-	msg := &util.TcpMessage{Command: "shutDown"}
+	msg := &util.ServerMessage{Command: util.SHUTDOWN_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send shutdown message %v", err))
@@ -131,7 +131,7 @@ func (t *TcpSender) ShutDown() {
 }
 
 func (t *TcpSender) Initialize(source string) {
-	msg := &util.TcpMessage{Command: "init", Source: source}
+	msg := &util.ServerMessage{Command: util.INIT_COMMAND, Source: source}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send init message %v", err))
@@ -146,7 +146,7 @@ func (t *TcpSender) IsAlive() bool {
 		var zero time.Time
 		t.conn.SetDeadline(zero)
 	}()
-	msg := &util.TcpMessage{Command: "alive-check"}
+	msg := &util.ServerMessage{Command: "alive-check"}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		return false

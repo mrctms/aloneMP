@@ -51,28 +51,28 @@ func (t *TcpServer) Listen(address string) error {
 
 		decoder := json.NewDecoder(t.conn)
 
-		var msg util.TcpMessage
+		var msg util.ServerMessage
 
 		decoder.Decode(&msg)
 
 		switch msg.Command {
-		case "play":
+		case util.PLAY_COMMAND:
 			t.selectedTrack <- msg.Track
-		case "next":
+		case util.NEXT_COMMAND:
 			t.nextTrack <- true
-		case "previous":
+		case util.PREVIOUS_COMMAND:
 			t.previousTrack <- true
-		case "pause":
+		case util.PAUSE_COMMAND:
 			t.pause <- true
-		case "mute":
+		case util.MUTE_COMMAND:
 			t.mute <- true
-		case "volumeUp":
+		case util.VOLUME_UP_COMMAND:
 			t.volumeUp <- true
-		case "volumeDown":
+		case util.VOLUME_DOWN_COMMAND:
 			t.volumeDown <- true
-		case "init":
+		case util.INIT_COMMAND:
 			t.source <- msg.Source
-		case "shutDown":
+		case util.SHUTDOWN_COMMAND:
 			t.shutDown <- true
 			err := t.startListen(address)
 			if err != nil {

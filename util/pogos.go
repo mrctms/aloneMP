@@ -19,8 +19,13 @@ type StatusResponse struct {
 	InError   bool   `json:"inError"`
 }
 
-type TcpMessage struct {
+type ServerMessage struct {
 	Command string `json:"command"`
 	Track   string `json:"track"`
 	Source  string `json:"source"`
+}
+
+type FilePathInfo struct {
+	FilePath string `json:"filePath"`
+	IsDir    bool   `json:"isDir"`
 }
