@@ -9,23 +9,23 @@ import (
 	"util"
 )
 
-type ApiServer struct {
+type WebServer struct {
 	address string
 	sender  senders.Sender
 	baseDir string
 }
 
-func NewApiServer(address string) *ApiServer {
-	apiSrv := new(ApiServer)
-	apiSrv.address = address
-	return apiSrv
+func NewWebServer(address string) *WebServer {
+	webSrv := new(WebServer)
+	webSrv.address = address
+	return webSrv
 }
 
-func (a *ApiServer) SetSender(sender senders.Sender) {
+func (a *WebServer) SetSender(sender senders.Sender) {
 	a.sender = sender
 }
 
-func (a *ApiServer) command(w http.ResponseWriter, req *http.Request) {
+func (a *WebServer) command(w http.ResponseWriter, req *http.Request) {
 	response := make(map[string]string)
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -71,7 +71,7 @@ func (a *ApiServer) command(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (a *ApiServer) trackList(w http.ResponseWriter, req *http.Request) {
+func (a *WebServer) trackList(w http.ResponseWriter, req *http.Request) {
 	response := make(map[string]string)
 	filePathInfoList := new([]util.FilePathInfo)
 
@@ -91,7 +91,7 @@ func (a *ApiServer) trackList(w http.ResponseWriter, req *http.Request) {
 	w.Write(j)
 }
 
-func (a *ApiServer) popolateTrackList(rootDir string, slice *[]util.FilePathInfo) {
+func (a *WebServer) popolateTrackList(rootDir string, slice *[]util.FilePathInfo) {
 	files := util.GetKnowFilesInfo(rootDir)
 	for _, v := range files {
 		var fpi util.FilePathInfo
@@ -110,7 +110,7 @@ func (a *ApiServer) popolateTrackList(rootDir string, slice *[]util.FilePathInfo
 	}
 }
 
-func (a *ApiServer) Run(source string) {
+func (a *WebServer) Run(source string) {
 	defer a.sender.ShutDown()
 	a.baseDir = source
 	a.sender.Initialize(source)
