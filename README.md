@@ -48,7 +48,7 @@ Supported formats are <b>MP3</b>, <b>FLAC</b>, <b>OGG</b> and <b>WAV</b>
 - Web interface
 
 Since I'm not a UI guy, if anyone want make a web interface for aloneMP are welcome!<br>
-I already have a basic API server on my branch.
+I already have a basic web server on my branch.
 
 Drop me an email before start the work.
 
