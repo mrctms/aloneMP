@@ -1,21 +1,20 @@
-package terminal
+package cli
 
 import (
 	"aloneMP/senders"
-	"aloneMP/ui/tui"
 	"fmt"
 	"time"
 )
 
 type TerminalClient struct {
-	mainTui *tui.MainTui
-	sender  senders.Sender
+	tui    *Tui
+	sender senders.Sender
 }
 
 func NewTerminalClient() *TerminalClient {
 	terminalClient := new(TerminalClient)
-	mainTui := tui.NewMainTui()
-	terminalClient.mainTui = mainTui
+	tui := NewTui()
+	terminalClient.tui = tui
 	return terminalClient
 }
 
@@ -27,46 +26,46 @@ func (t *TerminalClient) Run(rootDir string) {
 	ticker := time.NewTicker(time.Second).C
 	aliveTicker := time.NewTicker(time.Second * 10).C
 	defer func() {
-		t.mainTui.Stop()
+		t.tui.Stop()
 		t.sender.ShutDown()
 	}()
-	go t.mainTui.Run()
-	t.mainTui.PopolateTracksList(rootDir)
+	go t.tui.Run()
+	t.tui.PopolateTracksList(rootDir)
 	t.sender.Initialize(rootDir)
 
 	for {
 		select {
-		case track := <-t.mainTui.TrackSelected:
+		case track := <-t.tui.TrackSelected:
 			t.sender.Play(track)
-		case <-t.mainTui.Mute:
+		case <-t.tui.Mute:
 			t.sender.Mute()
-		case <-t.mainTui.Paused:
+		case <-t.tui.Paused:
 			t.sender.Pause()
-		case <-t.mainTui.VolumeUp:
+		case <-t.tui.VolumeUp:
 			t.sender.VolumeUp()
-		case <-t.mainTui.VolumeDown:
+		case <-t.tui.VolumeDown:
 			t.sender.VolumeDown()
 		case <-aliveTicker:
 			if !t.sender.IsAlive() {
-				t.mainTui.Stop()
+				t.tui.Stop()
 				fmt.Println("aloneMPd is not alive")
 				return
 			}
 		case <-ticker:
 			info := t.sender.TrackInfo()
 			if info.InError {
-				t.mainTui.NextTrack()
-				t.sender.Play(t.mainTui.CurrentTrack())
+				t.tui.NextTrack()
+				t.sender.Play(t.tui.CurrentTrack())
 			} else if !info.IsPlaying {
 				if (info.Duration == info.Progress) && (info.Length != 0) {
-					t.mainTui.NextTrack()
-					t.sender.Play(t.mainTui.CurrentTrack())
+					t.tui.NextTrack()
+					t.sender.Play(t.tui.CurrentTrack())
 				}
 			}
-			t.mainTui.SetProgDur(info.Progress, info.Duration, info.Length)
-			t.mainTui.SetTrackInfo(info.TrackInfo)
-			t.mainTui.Draw()
-		case <-t.mainTui.Quit:
+			t.tui.SetProgDur(info.Progress, info.Duration, info.Length)
+			t.tui.SetTrackInfo(info.TrackInfo)
+			t.tui.Draw()
+		case <-t.tui.Quit:
 			return
 		}
 	}

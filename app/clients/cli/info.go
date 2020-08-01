@@ -1,4 +1,4 @@
-package tui
+package cli
 
 import (
 	"gitlab.com/tslocum/cview"
