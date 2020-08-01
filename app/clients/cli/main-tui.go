@@ -1,4 +1,4 @@
-package tui
+package cli
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ const aloneMP = `
 /_/   \_\_|\___/|_| |_|\___|_|  |_|_| 
 `
 
-type MainTui struct {
+type Tui struct {
 	app           *cview.Application
 	grid          *cview.Grid
 	tracksList    *TracksList
@@ -31,11 +31,11 @@ type MainTui struct {
 	Quit          chan bool
 }
 
-func NewMainTui() *MainTui {
+func NewTui() *Tui {
 	banner := cview.NewTextView().SetTextAlign(cview.AlignLeft).SetText(aloneMP)
 	banner.SetBorder(false)
 	banner.SetTextColor(tcell.ColorDarkBlue)
-	t := new(MainTui)
+	t := new(Tui)
 	t.tracksList = NewTracksList()
 
 	t.cmd = NewCmdView()
@@ -62,7 +62,7 @@ func NewMainTui() *MainTui {
 	return t
 }
 
-func (t *MainTui) Run() error {
+func (t *Tui) Run() error {
 	t.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
@@ -96,15 +96,15 @@ func (t *MainTui) Run() error {
 	return nil
 }
 
-func (t *MainTui) Stop() {
+func (t *Tui) Stop() {
 	t.app.Stop()
 }
 
-func (t *MainTui) Draw() {
+func (t *Tui) Draw() {
 	t.app.Draw()
 }
 
-func (t *MainTui) setCmdText() {
+func (t *Tui) setCmdText() {
 	t.cmd.SetText(`
 		[yellow](↑)(↓) Browse Track
 		[yellow] (←)(→) Volume
@@ -114,7 +114,7 @@ func (t *MainTui) setCmdText() {
 		[yellow](Ctrl+C) Quit[yellow]`)
 }
 
-func (t *MainTui) SetTrackInfo(info *util.TrackInfo) {
+func (t *Tui) SetTrackInfo(info *util.TrackInfo) {
 	var text string
 	if info != nil {
 		text = fmt.Sprintf("[blue]Title:[white] \n%s\n"+
@@ -137,11 +137,11 @@ func (t *MainTui) SetTrackInfo(info *util.TrackInfo) {
 	t.trackInfo.SetInfo(text)
 }
 
-func (t *MainTui) PopolateTracksList(rootPath string) {
+func (t *Tui) PopolateTracksList(rootPath string) {
 	t.tracksList.AddItems(rootPath)
 }
 
-func (t *MainTui) SetProgDur(prog string, dur string, percentage int) {
+func (t *Tui) SetProgDur(prog string, dur string, percentage int) {
 	if prog == "" && dur == "" {
 		t.trackProgress.SetProgressTitle("00:00:00/00:00:00")
 	} else {
@@ -150,19 +150,19 @@ func (t *MainTui) SetProgDur(prog string, dur string, percentage int) {
 	t.trackProgress.UpdateProgress(percentage)
 }
 
-func (t *MainTui) NextTrack() string {
+func (t *Tui) NextTrack() string {
 	t.tracksList.NextTrack()
 	return t.tracksList.GetSelectedTrackName()
 }
 
-func (t *MainTui) PreviousTrack() string {
+func (t *Tui) PreviousTrack() string {
 	t.tracksList.PreviousTrack()
 	return t.tracksList.GetSelectedTrackName()
 }
 
-func (t *MainTui) TrackList() []string {
+func (t *Tui) TrackList() []string {
 	return t.tracksList.GetAllTracks()
 }
-func (t *MainTui) CurrentTrack() string {
+func (t *Tui) CurrentTrack() string {
 	return t.tracksList.GetSelectedTrackName()
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"aloneMP/clients"
-	"aloneMP/clients/terminal"
+	"aloneMP/clients/cli"
 	"aloneMP/senders"
 	"flag"
 	"fmt"
@@ -54,7 +54,7 @@ func main() {
 		}
 
 		if *tui {
-			client = terminal.NewTerminalClient()
+			client = cli.NewTerminalClient()
 		}
 
 		client.SetSender(sender)
