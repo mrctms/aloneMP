@@ -23,6 +23,7 @@ func (t *TerminalClient) SetSender(sender senders.Sender) {
 }
 
 func (t *TerminalClient) Run(rootDir string) {
+
 	ticker := time.NewTicker(time.Second).C
 	aliveTicker := time.NewTicker(time.Second * 10).C
 	defer func() {
@@ -53,18 +54,20 @@ func (t *TerminalClient) Run(rootDir string) {
 			}
 		case <-ticker:
 			info := t.sender.TrackInfo()
-			if info.InError {
-				t.tui.NextTrack()
-				t.sender.Play(t.tui.CurrentTrack())
-			} else if !info.IsPlaying {
-				if (info.Duration == info.Progress) && (info.Length != 0) {
+			if info != nil {
+				if info.InError {
 					t.tui.NextTrack()
 					t.sender.Play(t.tui.CurrentTrack())
+				} else if !info.IsPlaying {
+					if (info.TrackLength == info.TrackProgress) && (info.Percentage != 0) {
+						t.tui.NextTrack()
+						t.sender.Play(t.tui.CurrentTrack())
+					}
 				}
+				t.tui.SetProgDur(info.TrackProgressFormatted, info.TrackLengthFormatted, info.Percentage)
+				t.tui.SetTrackInfo(info.TrackInfo)
+				t.tui.Draw()
 			}
-			t.tui.SetProgDur(info.Progress, info.Duration, info.Length)
-			t.tui.SetTrackInfo(info.TrackInfo)
-			t.tui.Draw()
 		case <-t.tui.Quit:
 			return
 		}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"util"
 
 	"github.com/marcsauter/single"
 )
@@ -17,8 +18,13 @@ var version string
 var ver = flag.Bool("version", false, "show version")
 
 func main() {
+	logger, err := util.NewLogger("daemon-main")
+	if err != nil {
+		log.Fatalln(err)
+	}
 	hostname, err := os.Hostname()
 	if err != nil {
+		logger.Write(fmt.Sprintf("failed to get hostname %v", err))
 		log.Fatalln(err)
 	}
 	address = flag.String("addr", fmt.Sprintf("%s:3777", hostname), "address")
@@ -27,89 +33,59 @@ func main() {
 	if *ver {
 		fmt.Printf("\naloneMPd version: %s\n\n", version)
 	} else {
+
 		s := single.New("aloneMPd")
 
 		if err := s.CheckLock(); err != nil && err == single.ErrAlreadyRunning {
-			log.Fatalln("another instance is running")
+			msg := "another instance is running"
+			logger.Write(msg)
+			log.Fatalln(msg)
 		} else {
 			defer s.TryUnlock()
 		}
-		var player *media.FilePlayer
+		player := media.NewMusicPlayer()
+		listener := server.NewTcpServer()
 
 		defer func() {
-			if player != nil {
-				if player.Info().IsPlaying() {
+			if r := recover(); r != nil {
+				msg := fmt.Sprintf("Something went wrong: %v", r)
+				logger.Write(msg)
+				fmt.Println(msg)
+			} else {
+				if player != nil {
 					player.Close()
 				}
+				if listener != nil {
+					listener.Close()
+				}
 			}
-
 		}()
-		listener := server.NewTcpServer()
 
 		go listener.Listen(*address)
 
 		for {
 			select {
-			case dir := <-listener.Source():
-				var err error
-				player, err = media.NewFilePlayer()
+			case pArgs := <-listener.Initialize():
+				err := player.Initialize(pArgs)
 				if err != nil {
-					return
+					panic(err)
 				}
-				listener.SetPlayerInfo(player.Info())
-				go player.Start(dir)
-			case track := <-listener.SelectedTrack():
-				if player != nil {
-					if player.Info().IsPlaying() {
-						player.Clear()
-					}
-					player.SetTrackToPlay(track)
-					player.Play()
-				}
-			case <-listener.NextTrack():
-				if player != nil {
-					if player.Info().IsPlaying() {
-						player.Clear()
-					}
-					nextTrack := player.Info().NextTrack()
-					if nextTrack != "" {
-						player.SetTrackToPlay(nextTrack)
-						player.Play()
-					}
-				}
-			case <-listener.PreviousTrack():
-				if player != nil {
-					if player.Info().IsPlaying() {
-						player.Clear()
-					}
-					previousTrack := player.Info().PreviousTrack()
-					if previousTrack != "" {
-						player.SetTrackToPlay(previousTrack)
-						player.Play()
-					}
-				}
-			case <-listener.MuteTrack():
-				if player != nil {
-					player.Mute()
-				}
-			case <-listener.PauseTrack():
-				if player != nil {
-					player.Pause()
-				}
+				go player.Start()
+				listener.SetPlayerInfo(player.PlayerInfo())
+			case track := <-listener.Play():
+				player.Play(track)
+			case <-listener.Mute():
+				player.Mute()
+			case <-listener.Pause():
+				player.Pause()
 			case <-listener.VolumeUp():
-				if player != nil {
-					player.VolumeUp()
-				}
+				player.VolumeUp()
 			case <-listener.VolumeDown():
-				if player != nil {
-					player.VolumeDown()
-				}
+				player.VolumeDown()
 			case <-listener.ShutDown():
-				if player != nil {
-					if player.Info().IsPlaying() {
-						player.Close()
-					}
-				}
+				player.Close()
+			case err := <-player.FatalError():
+				panic(err)
 			}
 		}
 	}

@@ -114,25 +114,13 @@ func (t *Tui) setCmdText() {
 		[yellow](Ctrl+C) Quit[yellow]`)
 }
 
-func (t *Tui) SetTrackInfo(info *util.TrackInfo) {
+func (t *Tui) SetTrackInfo(info util.TrackInfo) {
 	var text string
-	if info != nil {
-		text = fmt.Sprintf("[blue]Title:[white] \n%s\n"+
-			"[blue]Album:[white] \n%s\n"+
-			"[blue]Artist:[white] \n%s\n"+
-			"[blue]AlbumArtist:[white] \n%s\n"+
-			"[blue]Composer:[white] \n%s\n"+
-			"[blue]Genre:[white] \n%s\n"+
-			"[blue]Year:[white] \n%d\n", info.Title, info.Album, info.Artist, info.AlbumArtist, info.Composer, info.Genre, info.Year)
-	} else {
-		text = "[blue]Title: \n\n" +
-			"[blue]Album: \n\n" +
-			"[blue]Artist: \n\n" +
-			"[blue]AlbumArtist: \n\n" +
-			"[blue]Composer: \n\n" +
-			"[blue]Genre: \n\n" +
-			"[blue]Year: \n\n"
-	}
+	text = fmt.Sprintf("[blue]Title:[white] \n%s\n"+
+		"[blue]Album:[white] \n%s\n"+
+		"[blue]Artist:[white] \n%s\n"+
+		"[blue]Genre:[white] \n%s\n"+
+		"[blue]Year:[white] \n%d\n", info.Title, info.Album, info.Artist, info.Genre, info.Year)
 
 	t.trackInfo.SetInfo(text)
 }

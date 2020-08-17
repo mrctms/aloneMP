@@ -1,14 +1,13 @@
 package media
 
 type Player interface {
-	Start(source string)
-	Clear()
-	Close()
-	Pause()
-	Play()
+	Init(args interface{}) error
+	Play(track Track)
 	Mute()
+	Pause()
 	VolumeUp()
 	VolumeDown()
-	SetTrackToPlay(track string)
-	Info() PlayerInformer
+	Stop()
+	Close()
+	Info() *PlayerInformer
 }

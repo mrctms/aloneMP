@@ -131,7 +131,7 @@ func (t *TcpSender) ShutDown() {
 }
 
 func (t *TcpSender) Initialize(source string) {
-	msg := &util.ServerMessage{Command: util.INIT_COMMAND, Source: source}
+	msg := &util.ServerMessage{Command: util.INIT_COMMAND, Source: source, OutputDevice: ""}
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		t.logger.Write(fmt.Sprintf("failed to send init message %v", err))
