@@ -3,8 +3,6 @@ package senders
 import "util"
 
 type Sender interface {
-	NextTrack()
-	PreviousTrack()
 	Mute()
 	Pause()
 	VolumeUp()

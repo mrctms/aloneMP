@@ -8,36 +8,32 @@ import (
 )
 
 type TcpServer struct {
-	nextTrack     chan bool
-	previousTrack chan bool
 	pause         chan bool
 	mute          chan bool
 	volumeUp      chan bool
 	volumeDown    chan bool
 	shutDown      chan bool
 	selectedTrack chan string
-	source        chan string
-	pInfo         media.PlayerInformer
+	playerArgs    chan util.PlayerArgs
+	playerInfo    *media.PlayerInformer
 	listener      net.Listener
 	conn          net.Conn
 }
 
 func NewTcpServer() *TcpServer {
 	ts := new(TcpServer)
-	ts.nextTrack = make(chan bool)
-	ts.previousTrack = make(chan bool)
 	ts.pause = make(chan bool)
 	ts.mute = make(chan bool)
 	ts.volumeUp = make(chan bool)
 	ts.volumeDown = make(chan bool)
 	ts.selectedTrack = make(chan string)
 	ts.shutDown = make(chan bool)
-	ts.source = make(chan string)
+	ts.playerArgs = make(chan util.PlayerArgs)
 	return ts
 }
 
-func (t *TcpServer) SetPlayerInfo(info media.PlayerInformer) {
-	t.pInfo = info
+func (t *TcpServer) SetPlayerInfo(info *media.PlayerInformer) {
+	t.playerInfo = info
 }
 
 func (t *TcpServer) Listen(address string) error {
@@ -48,7 +44,6 @@ func (t *TcpServer) Listen(address string) error {
 	defer t.conn.Close()
 
 	for {
-
 		decoder := json.NewDecoder(t.conn)
 
 		var msg util.ServerMessage
@@ -59,9 +54,6 @@ func (t *TcpServer) Listen(address string) error {
 		case util.PLAY_COMMAND:
 			t.selectedTrack <- msg.Track
 		case util.NEXT_COMMAND:
-			t.nextTrack <- true
-		case util.PREVIOUS_COMMAND:
-			t.previousTrack <- true
 		case util.PAUSE_COMMAND:
 			t.pause <- true
 		case util.MUTE_COMMAND:
@@ -71,7 +63,8 @@ func (t *TcpServer) Listen(address string) error {
 		case util.VOLUME_DOWN_COMMAND:
 			t.volumeDown <- true
 		case util.INIT_COMMAND:
-			t.source <- msg.Source
+			args := util.PlayerArgs{Source: msg.Source, OutputDevice: msg.OutputDevice}
+			t.playerArgs <- args
 		case util.SHUTDOWN_COMMAND:
 			t.shutDown <- true
 			err := t.startListen(address)
@@ -79,16 +72,20 @@ func (t *TcpServer) Listen(address string) error {
 				return err
 			}
 		case "status":
-			status := &util.StatusResponse{
-				TrackInfo: t.pInfo.TrackInfo(),
-				Progress:  t.pInfo.Progress(),
-				Length:    t.pInfo.TrackLength(),
-				Duration:  t.pInfo.Duration(),
-				IsPlaying: t.pInfo.IsPlaying(),
-				InError:   t.pInfo.InError(),
+			status := new(util.StatusResponse)
+			if t.playerInfo != nil {
+				status.TrackInfo = t.playerInfo.TrackInfo()
+				status.TrackProgress = t.playerInfo.TrackProgress()
+				status.Percentage = t.playerInfo.Percentage()
+				status.TrackLength = t.playerInfo.TrackLength()
+				status.TrackLengthFormatted = t.playerInfo.TrackLengthFormatted()
+				status.TrackProgressFormatted = t.playerInfo.TrackProgressFormatted()
+				status.IsPlaying = t.playerInfo.IsPlaying()
+				status.InError = t.playerInfo.InError()
 			}
 			response, _ := json.Marshal(status)
 			t.conn.Write(response)
+
 		case "alive-check":
 			t.conn.Write([]byte("4l0n3"))
 		}
@@ -108,19 +105,11 @@ func (t *TcpServer) startListen(address string) error {
 	return nil
 }
 
-func (t *TcpServer) NextTrack() chan bool {
-	return t.nextTrack
-}
-
-func (t *TcpServer) PreviousTrack() chan bool {
-	return t.previousTrack
-}
-
-func (t *TcpServer) PauseTrack() chan bool {
+func (t *TcpServer) Pause() chan bool {
 	return t.pause
 }
 
-func (t *TcpServer) MuteTrack() chan bool {
+func (t *TcpServer) Mute() chan bool {
 	return t.mute
 }
 
@@ -136,14 +125,14 @@ func (t *TcpServer) ShutDown() chan bool {
 	return t.shutDown
 }
 
-func (t *TcpServer) SelectedTrack() chan string {
+func (t *TcpServer) Play() chan string {
 	return t.selectedTrack
 }
 
-func (t *TcpServer) Source() chan string {
-	return t.source
+func (t *TcpServer) Initialize() chan util.PlayerArgs {
+	return t.playerArgs
 }
-
-func (t *TcpServer) PlayerInfo() media.PlayerInformer {
-	return t.pInfo
+func (t *TcpServer) Close() {
+	t.listener.Close()
+	t.conn.Close()
 }
