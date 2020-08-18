@@ -6,17 +6,21 @@ aloneMP is composed of two elements, the daemon (aloneMPd) and the clients, for 
 
 <img src="demo.gif" alt="demo">
 
-# Download and installation on Debian and friends
+# Installation
+
+With the installers aloneMP client and the daemon are installed on the same machine, if you want configure all the things manually there are the zip with the binary.
+
+## Debian and friends
 
 You need to have systemd.
 
 Download the .deb package <a href="https://github.com/marcktomack/aloneMP/releases">here</a>
 
-This enable the daemon and install aloneMP
+## Windows
 
-There are also the zip with only the binary if you want to configure all the things manually
+Download the installer <a href="https://github.com/marcktomack/aloneMP/releases">here</a>
 
-I will provide more packages and installation types.
+
 
 # Usage
 
