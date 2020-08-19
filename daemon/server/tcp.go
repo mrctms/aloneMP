@@ -3,6 +3,7 @@ package server
 import (
 	"aloneMPd/media"
 	"encoding/json"
+	"io"
 	"net"
 	"util"
 )
@@ -14,10 +15,11 @@ type TcpServer struct {
 	volumeDown    chan bool
 	shutDown      chan bool
 	selectedTrack chan string
+	err           chan error
 	playerArgs    chan util.PlayerArgs
 	playerInfo    *media.PlayerInformer
 	listener      net.Listener
-	conn          net.Conn
+	tcpConn       util.TcpConn
 }
 
 func NewTcpServer() *TcpServer {
@@ -36,19 +38,30 @@ func (t *TcpServer) SetPlayerInfo(info *media.PlayerInformer) {
 	t.playerInfo = info
 }
 
-func (t *TcpServer) Listen(address string) error {
+func (t *TcpServer) Listen(address string) {
 	err := t.startListen(address)
 	if err != nil {
-		return err
+		t.err <- err
 	}
-	defer t.conn.Close()
+	defer t.tcpConn.Close()
 
 	for {
-		decoder := json.NewDecoder(t.conn)
+		decoder := json.NewDecoder(t.tcpConn.Conn)
 
 		var msg util.ServerMessage
 
-		decoder.Decode(&msg)
+		err := decoder.Decode(&msg)
+		if err != nil {
+			if err == io.EOF { // connection is closed. The method to check if the connection from the client is closed should be better
+				t.shutDown <- true
+				err := t.startListen(address)
+				if err != nil {
+					t.err <- err
+				}
+			} else {
+				t.err <- err
+			}
+		}
 
 		switch msg.Command {
 		case util.PLAY_COMMAND:
@@ -69,7 +82,7 @@ func (t *TcpServer) Listen(address string) error {
 			t.shutDown <- true
 			err := t.startListen(address)
 			if err != nil {
-				return err
+				t.err <- err
 			}
 		case "status":
 			status := new(util.StatusResponse)
@@ -84,10 +97,10 @@ func (t *TcpServer) Listen(address string) error {
 				status.InError = t.playerInfo.InError()
 			}
 			response, _ := json.Marshal(status)
-			t.conn.Write(response)
+			t.tcpConn.Write(response)
 
 		case "alive-check":
-			t.conn.Write([]byte("4l0n3"))
+			t.tcpConn.Write([]byte("4l0n3"))
 		}
 	}
 }
@@ -97,7 +110,7 @@ func (t *TcpServer) startListen(address string) error {
 	if err != nil {
 		return err
 	}
-	t.conn, err = t.listener.Accept()
+	t.tcpConn.Conn, err = t.listener.Accept()
 	if err != nil {
 		return err
 	}
@@ -129,10 +142,14 @@ func (t *TcpServer) Play() chan string {
 	return t.selectedTrack
 }
 
+func (t *TcpServer) FatalError() chan error {
+	return t.err
+}
+
 func (t *TcpServer) Initialize() chan util.PlayerArgs {
 	return t.playerArgs
 }
 func (t *TcpServer) Close() {
 	t.listener.Close()
-	t.conn.Close()
+	t.tcpConn.Close()
 }
