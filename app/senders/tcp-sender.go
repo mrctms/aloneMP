@@ -32,26 +32,6 @@ func NewTcpSender(address string) (*TcpSender, error) {
 	return tcpSender, nil
 }
 
-func (t *TcpSender) NextTrack() {
-	msg := &util.ServerMessage{Command: util.NEXT_COMMAND}
-	jsonMsg, err := json.Marshal(msg)
-	if err != nil {
-		t.logger.Write(fmt.Sprintf("failed to send next track message %v", err))
-		return
-	}
-	t.conn.Write(jsonMsg)
-}
-
-func (t *TcpSender) PreviousTrack() {
-	msg := &util.ServerMessage{Command: util.PREVIOUS_COMMAND}
-	jsonMsg, err := json.Marshal(msg)
-	if err != nil {
-		t.logger.Write(fmt.Sprintf("failed to send previous track message %v", err))
-		return
-	}
-	t.conn.Write(jsonMsg)
-}
-
 func (t *TcpSender) Mute() {
 	msg := &util.ServerMessage{Command: util.MUTE_COMMAND}
 	jsonMsg, err := json.Marshal(msg)
