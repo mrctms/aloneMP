@@ -86,6 +86,8 @@ func main() {
 				player.Close()
 			case err := <-player.FatalError():
 				panic(err)
+			case err := <-listener.FatalError():
+				panic(err)
 			}
 		}
 	}
