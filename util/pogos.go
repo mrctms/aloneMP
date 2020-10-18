@@ -9,14 +9,12 @@ type TrackInfo struct {
 }
 
 type StatusResponse struct {
-	TrackInfo              TrackInfo
-	TrackProgress          int64  `json:"trackProgress"`
-	Percentage             int    `json:"percentage"`
-	TrackLength            int64  `json:"trackLength"`
-	TrackProgressFormatted string `json:"trackProgressFormatted"`
-	TrackLengthFormatted   string `json:"trackLengthFormatted"`
-	IsPlaying              bool   `json:"isPlaying"`
-	InError                bool   `json:"inError"`
+	TrackInfo     TrackInfo
+	TrackProgress int64 `json:"trackProgress"`
+	Percentage    int   `json:"percentage"`
+	TrackLength   int64 `json:"trackLength"`
+	IsPlaying     bool  `json:"isPlaying"`
+	InError       bool  `json:"inError"`
 }
 
 type ServerMessage struct {

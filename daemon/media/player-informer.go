@@ -7,20 +7,18 @@ import (
 )
 
 type PlayerInformer struct {
-	volume                 float64
-	playing                bool
-	paused                 bool
-	muted                  bool
-	info                   util.TrackInfo
-	percentage             int
-	trackLength            int64
-	trackLengthFormatted   string
-	trackProgress          int64
-	trackProgressFormatted string
-	currentTrack           Track
-	rootDir                string
-	inError                bool
-	trackList              *util.TrackListMessage
+	volume        float64
+	playing       bool
+	paused        bool
+	muted         bool
+	info          util.TrackInfo
+	percentage    int
+	trackLength   int64
+	trackProgress int64
+	currentTrack  Track
+	rootDir       string
+	inError       bool
+	trackList     *util.TrackListMessage
 }
 
 func (f *PlayerInformer) setVolume(volume float64) {
@@ -55,16 +53,8 @@ func (f *PlayerInformer) setTrackLength(length int64) {
 	f.trackLength = length
 }
 
-func (f *PlayerInformer) setTrackLengthFormatted(length string) {
-	f.trackLengthFormatted = length
-}
-
 func (f *PlayerInformer) setTrackProgress(progress int64) {
 	f.trackProgress = progress
-}
-
-func (f *PlayerInformer) setTrackProgressFormatted(progress string) {
-	f.trackProgressFormatted = progress
 }
 
 func (f *PlayerInformer) setCurrentTrack(track Track) {
@@ -101,13 +91,6 @@ func (f PlayerInformer) Percentage() int {
 
 func (f PlayerInformer) TrackLength() int64 {
 	return f.trackLength
-}
-func (f PlayerInformer) TrackLengthFormatted() string {
-	return f.trackLengthFormatted
-}
-
-func (f PlayerInformer) TrackProgressFormatted() string {
-	return f.trackProgressFormatted
 }
 
 func (f PlayerInformer) TrackProgress() int64 {

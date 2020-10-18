@@ -1,10 +1,13 @@
 package util
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var KnowExtension = [4]string{".mp3", ".wav", ".flac", ".ogg"}
@@ -55,4 +58,13 @@ func contains(s [4]string, e string) bool {
 		}
 	}
 	return false
+}
+
+func FormatProgDur(d time.Duration) string {
+	// thanks to https://github.com/Depado
+	h := math.Mod(d.Hours(), 24)
+	m := math.Mod(d.Minutes(), 60)
+	s := math.Mod(d.Seconds(), 60)
+	tot := fmt.Sprintf("%02d:%02d:%02d", int(h), int(m), int(s))
+	return tot
 }

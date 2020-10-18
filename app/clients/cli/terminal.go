@@ -4,6 +4,7 @@ import (
 	"aloneMP/senders"
 	"fmt"
 	"time"
+	"util"
 )
 
 type TerminalClient struct {
@@ -66,7 +67,7 @@ func (t *TerminalClient) Run(rootDir string) {
 						t.sender.Play(t.tui.CurrentTrack())
 					}
 				}
-				t.tui.SetProgDur(info.TrackProgressFormatted, info.TrackLengthFormatted, info.Percentage)
+				t.tui.SetProgDur(util.FormatProgDur(time.Duration(info.TrackProgress)), util.FormatProgDur(time.Duration(info.TrackLength)), info.Percentage)
 				t.tui.SetTrackInfo(info.TrackInfo)
 				t.tui.Draw()
 			}

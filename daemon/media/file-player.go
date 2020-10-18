@@ -2,7 +2,6 @@ package media
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 	"time"
@@ -129,9 +128,7 @@ func (f *FilePlayer) updateInfo() {
 		f.playerInfo.setMuted(f.volume.Silent)
 		f.playerInfo.setPercentage(int(float64(position) / float64(length) * 100))
 		f.playerInfo.setTrackProgress(int64(position))
-		f.playerInfo.setTrackProgressFormatted(formatProgDur(position))
 		f.playerInfo.setTrackLength(int64(length))
-		f.playerInfo.setTrackLengthFormatted(formatProgDur(length))
 		f.playerInfo.setTrackInfo(f.trackInPlay.TrackInfo())
 		f.playerInfo.setCurrentTrack(f.trackInPlay)
 		f.playerInfo.setPlaying(position != length)
@@ -198,13 +195,4 @@ func (f *FilePlayer) Close() {
 		f.infoTimer.Stop()
 	}
 	speaker.Close()
-}
-
-func formatProgDur(d time.Duration) string {
-	// thanks to https://github.com/Depado
-	h := math.Mod(d.Hours(), 24)
-	m := math.Mod(d.Minutes(), 60)
-	s := math.Mod(d.Seconds(), 60)
-	tot := fmt.Sprintf("%02d:%02d:%02d", int(h), int(m), int(s))
-	return tot
 }

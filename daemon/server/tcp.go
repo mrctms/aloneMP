@@ -90,8 +90,6 @@ func (t *TcpServer) Listen(address string) {
 				status.TrackProgress = t.playerInfo.TrackProgress()
 				status.Percentage = t.playerInfo.Percentage()
 				status.TrackLength = t.playerInfo.TrackLength()
-				status.TrackLengthFormatted = t.playerInfo.TrackLengthFormatted()
-				status.TrackProgressFormatted = t.playerInfo.TrackProgressFormatted()
 				status.IsPlaying = t.playerInfo.IsPlaying()
 				status.InError = t.playerInfo.InError()
 			}
