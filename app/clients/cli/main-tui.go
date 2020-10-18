@@ -125,8 +125,8 @@ func (t *Tui) SetTrackInfo(info util.TrackInfo) {
 	t.trackInfo.SetInfo(text)
 }
 
-func (t *Tui) PopolateTracksList(rootPath string) {
-	t.tracksList.AddItems(rootPath)
+func (t *Tui) PopolateTracksList(trackList util.TrackListMessage) {
+	t.tracksList.AddTrackList(trackList)
 }
 
 func (t *Tui) SetProgDur(prog string, dur string, percentage int) {
@@ -148,9 +148,6 @@ func (t *Tui) PreviousTrack() string {
 	return t.tracksList.GetSelectedTrackName()
 }
 
-func (t *Tui) TrackList() []string {
-	return t.tracksList.GetAllTracks()
-}
 func (t *Tui) CurrentTrack() string {
 	return t.tracksList.GetSelectedTrackName()
 }

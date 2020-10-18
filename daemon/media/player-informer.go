@@ -128,33 +128,48 @@ func (f PlayerInformer) TrackList() util.TrackListMessage {
 func (f *PlayerInformer) loadTrackList() {
 	f.trackList = new(util.TrackListMessage)
 	f.trackList.Root = f.rootDir
-	files := util.GetKnowFilesInfo(f.rootDir)
+	f.trackList.Content = f.getRootInfo(f.rootDir)
+}
+func (f *PlayerInformer) getRootInfo(rootPath string) []util.RootInfo {
 	var rootInfo []util.RootInfo
-
+	var files = util.GetKnowFilesInfo(rootPath)
 	for _, v := range files {
 		var ri util.RootInfo
-		path := filepath.Join(f.rootDir, v.Name())
-		ri.Dir = v.Name()
+		path := filepath.Join(rootPath, v.Name())
+		ri.Name = v.Name()
+		ri.Path = ""
 		p, err := os.Stat(path)
 		if err != nil {
 			continue
 		}
-		if !p.IsDir() {
-			continue
+		ri.IsDir = p.IsDir()
+		if ri.IsDir {
+			dirFiles := util.GetKnowFilesInfo(path)
+			var rootInfoContent []util.RootInfo
+			for _, e := range dirFiles {
+				var ric util.RootInfo
+				ric.Name = e.Name()
+				subPath := filepath.Join(path, e.Name())
+				ric.Path = subPath
+				sp, err := os.Stat(subPath)
+				if err != nil {
+					continue
+				}
+				ric.IsDir = sp.IsDir()
+				if ric.IsDir {
+					ric.Path = ""
+					ric.Content = f.getRootInfo(subPath)
+				}
+				rootInfoContent = append(rootInfoContent, ric)
+			}
+			ri.Content = rootInfoContent
+		} else {
+			ri.Path = path
 		}
-		dirFiles := util.GetKnowFilesInfo(path)
-		var filePathList []util.FilePathInfo
-		for _, e := range dirFiles {
-			var fpi util.FilePathInfo
-			fpi.FilePath = e.Name()
-			filePathList = append(filePathList, fpi)
-		}
-		ri.Content = filePathList
 		rootInfo = append(rootInfo, ri)
 	}
-	f.trackList.Content = rootInfo
+	return rootInfo
 }
-
 func (f PlayerInformer) InError() bool {
 	return f.inError
 }

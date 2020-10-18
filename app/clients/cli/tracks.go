@@ -1,9 +1,6 @@
 package cli
 
 import (
-	"os"
-	"path/filepath"
-
 	"util"
 
 	"github.com/gdamore/tcell"
@@ -12,7 +9,6 @@ import (
 
 type TracksList struct {
 	*cview.TreeView
-	allTrack []string
 }
 
 func NewTracksList() *TracksList {
@@ -26,57 +22,32 @@ func NewTracksList() *TracksList {
 	return trackList
 }
 
-func (t *TracksList) AddItems(rootPath string) {
-	root := cview.NewTreeNode(rootPath).SetColor(tcell.ColorRed)
+func (t *TracksList) AddTrackList(trackList util.TrackListMessage) {
+	root := cview.NewTreeNode(trackList.Root).SetColor(tcell.ColorRed)
 	t.TreeView.SetRoot(root).SetCurrentNode(root)
-	t.popolateTreeView(root, rootPath)
+	for _, track := range trackList.Content {
+		t.popolateTreeView(root, track)
+	}
+
 }
 
-func (t *TracksList) popolateTreeView(targetNode *cview.TreeNode, rootPath string) {
-	files := util.GetKnowFilesInfo(rootPath)
-
-	for _, file := range files {
-		node := cview.NewTreeNode(file.Name()).
-			SetReference(filepath.Join(rootPath, file.Name())).
-			SetSelectable(true).SetColor(tcell.ColorBlue).Collapse()
-		if file.IsDir() {
-			node.SetColor(tcell.ColorRed)
-			t.popolateTreeView(node, filepath.Join(rootPath, file.Name()))
+func (t *TracksList) popolateTreeView(targetNode *cview.TreeNode, rootInfo util.RootInfo) {
+	node := cview.NewTreeNode(rootInfo.Name).SetReference(rootInfo.Path).
+		SetSelectable(true).SetColor(tcell.ColorBlue).Collapse()
+	if rootInfo.IsDir {
+		node.SetColor(tcell.ColorRed)
+		for _, v := range rootInfo.Content {
+			t.popolateTreeView(node, v)
 		}
-		t.internalLoadAllTracks(node)
-		targetNode.AddChild(node)
 	}
-}
-
-func (t *TracksList) internalLoadAllTracks(node *cview.TreeNode) {
-	nodeReference := node.GetReference().(string)
-	file, err := os.Stat(nodeReference)
-	if err != nil {
-		return
-	}
-	if !file.IsDir() {
-		fileName := filepath.Base(nodeReference)
-		t.allTrack = append(t.allTrack, fileName)
-	}
+	targetNode.AddChild(node)
 }
 
 func (t *TracksList) GetSelectedTrackName() string {
 	selectedNode := t.TreeView.GetCurrentNode()
 	selectedNodeReference := selectedNode.GetReference()
 	path := selectedNodeReference.(string)
-	file, err := os.Stat(path)
-	if err != nil {
-		return ""
-	}
-	if file.IsDir() {
-		return ""
-	} else {
-		return path
-	}
-}
-
-func (t *TracksList) GetAllTracks() []string {
-	return t.allTrack
+	return path
 }
 
 func (t *TracksList) NextTrack() {

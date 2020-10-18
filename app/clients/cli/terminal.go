@@ -31,9 +31,11 @@ func (t *TerminalClient) Run(rootDir string) {
 		t.sender.ShutDown()
 	}()
 	go t.tui.Run()
-	t.tui.PopolateTracksList(rootDir)
-	t.sender.Initialize(rootDir)
 
+	t.sender.Initialize(rootDir)
+	time.Sleep(1 * time.Second)
+	tl := t.sender.TrackList()
+	t.tui.PopolateTracksList(*tl)
 	for {
 		select {
 		case track := <-t.tui.TrackSelected:

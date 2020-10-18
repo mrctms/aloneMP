@@ -26,13 +26,11 @@ type ServerMessage struct {
 	OutputDevice string `json:"device"`
 }
 
-type FilePathInfo struct {
-	FilePath string `json:"filePath"`
-}
-
 type RootInfo struct {
-	Dir     string         `json:"dir"`
-	Content []FilePathInfo `json:"content"`
+	Name    string     `json:"name"`
+	Path    string     `json:"path"`
+	IsDir   bool       `json:"isDir"`
+	Content []RootInfo `json:"content"`
 }
 
 type TrackListMessage struct {

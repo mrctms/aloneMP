@@ -98,6 +98,27 @@ func (t *TcpSender) TrackInfo() *util.StatusResponse {
 	return &res
 }
 
+func (t *TcpSender) TrackList() *util.TrackListMessage {
+	msg := &util.ServerMessage{Command: util.TRACK_LIST}
+	jsonMsg, _ := json.Marshal(msg)
+	_, err := t.tcpConn.Write(jsonMsg)
+	if err != nil {
+		t.logger.Write(fmt.Sprintf("failed to send track list message %v", err))
+		return nil
+	}
+	decoder := json.NewDecoder(t.tcpConn.Conn)
+
+	var res util.TrackListMessage
+
+	err = decoder.Decode(&res)
+	if err != nil {
+		t.logger.Write(fmt.Sprintf("failed to decode track list message %v", err))
+		return nil
+	}
+	return &res
+
+}
+
 func (t *TcpSender) ShutDown() {
 	msg := &util.ServerMessage{Command: util.SHUTDOWN_COMMAND}
 	jsonMsg, _ := json.Marshal(msg)
