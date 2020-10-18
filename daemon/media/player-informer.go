@@ -1,6 +1,8 @@
 package media
 
 import (
+	"os"
+	"path/filepath"
 	"util"
 )
 
@@ -16,11 +18,17 @@ type PlayerInformer struct {
 	trackProgress          int64
 	trackProgressFormatted string
 	currentTrack           Track
+	rootDir                string
 	inError                bool
+	trackList              *util.TrackListMessage
 }
 
 func (f *PlayerInformer) setVolume(volume float64) {
 	f.volume = volume
+}
+
+func (f *PlayerInformer) setRootDir(rootDir string) {
+	f.rootDir = rootDir
 }
 
 func (f *PlayerInformer) setPlaying(isPlaying bool) {
@@ -108,6 +116,43 @@ func (f PlayerInformer) TrackProgress() int64 {
 
 func (f PlayerInformer) PlayingTrack() Track {
 	return f.currentTrack
+}
+
+func (f PlayerInformer) TrackList() util.TrackListMessage {
+	if f.trackList == nil {
+		f.loadTrackList()
+	}
+	return *f.trackList
+}
+
+func (f *PlayerInformer) loadTrackList() {
+	f.trackList = new(util.TrackListMessage)
+	f.trackList.Root = f.rootDir
+	files := util.GetKnowFilesInfo(f.rootDir)
+	var rootInfo []util.RootInfo
+
+	for _, v := range files {
+		var ri util.RootInfo
+		path := filepath.Join(f.rootDir, v.Name())
+		ri.Dir = v.Name()
+		p, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		if !p.IsDir() {
+			continue
+		}
+		dirFiles := util.GetKnowFilesInfo(path)
+		var filePathList []util.FilePathInfo
+		for _, e := range dirFiles {
+			var fpi util.FilePathInfo
+			fpi.FilePath = e.Name()
+			filePathList = append(filePathList, fpi)
+		}
+		ri.Content = filePathList
+		rootInfo = append(rootInfo, ri)
+	}
+	f.trackList.Content = rootInfo
 }
 
 func (f PlayerInformer) InError() bool {

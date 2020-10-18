@@ -28,7 +28,16 @@ type ServerMessage struct {
 
 type FilePathInfo struct {
 	FilePath string `json:"filePath"`
-	IsDir    bool   `json:"isDir"`
+}
+
+type RootInfo struct {
+	Dir     string         `json:"dir"`
+	Content []FilePathInfo `json:"content"`
+}
+
+type TrackListMessage struct {
+	Root    string     `json:"root"`
+	Content []RootInfo `json:"content"`
 }
 
 type PlayerArgs struct {

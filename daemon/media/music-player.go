@@ -36,6 +36,7 @@ func (m *MusicPlayer) Initialize(args util.PlayerArgs) error {
 	if err != nil {
 		return err
 	}
+
 	if stat.IsDir() {
 		m.player, err = NewFilePlayer()
 		if err != nil {
@@ -46,6 +47,7 @@ func (m *MusicPlayer) Initialize(args util.PlayerArgs) error {
 			return err
 		}
 		m.playerInfo = m.player.Info()
+		m.playerInfo.setRootDir(args.Source)
 		m.loadedTracks = new([]Track)
 		files := util.GetKnowFiles(args.Source)
 		for _, v := range files {

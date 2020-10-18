@@ -66,7 +66,6 @@ func (t *TcpServer) Listen(address string) {
 		switch msg.Command {
 		case util.PLAY_COMMAND:
 			t.selectedTrack <- msg.Track
-		case util.NEXT_COMMAND:
 		case util.PAUSE_COMMAND:
 			t.pause <- true
 		case util.MUTE_COMMAND:
@@ -84,7 +83,7 @@ func (t *TcpServer) Listen(address string) {
 			if err != nil {
 				t.err <- err
 			}
-		case "status":
+		case util.STATUS:
 			status := new(util.StatusResponse)
 			if t.playerInfo != nil {
 				status.TrackInfo = t.playerInfo.TrackInfo()
@@ -98,8 +97,10 @@ func (t *TcpServer) Listen(address string) {
 			}
 			response, _ := json.Marshal(status)
 			t.tcpConn.Write(response)
-
-		case "alive-check":
+		case util.TRACK_LIST:
+			response, _ := json.Marshal(t.playerInfo.TrackList())
+			t.tcpConn.Write(response)
+		case util.ALIVE_CHECK:
 			t.tcpConn.Write([]byte("4l0n3"))
 		}
 	}
