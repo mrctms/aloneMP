@@ -4,7 +4,6 @@ A minimal music player terminal based.
 
 aloneMP is composed of two elements, the daemon (aloneMPd) and the clients, for now is avaiable only the terminal client with a TUI
 
-<img src="demo.gif" alt="demo">
 
 # Installation
 
