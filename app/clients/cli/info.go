@@ -10,9 +10,9 @@ type TrackInfo struct {
 
 func NewTrackInfo() *TrackInfo {
 	trackInfo := new(TrackInfo)
-	trackInfo.TextView = cview.NewTextView().SetTextAlign(cview.AlignLeft)
-	trackInfo.TextView.SetTitle("Track Info")
-	trackInfo.TextView.SetBorder(true)
+	trackInfo.TextView = cview.NewTextView().SetTextAlign(cview.AlignCenter)
+	//trackInfo.TextView.SetTitle("Track Info")
+	trackInfo.TextView.SetBorder(false)
 	trackInfo.TextView.SetDynamicColors(true)
 	return trackInfo
 }

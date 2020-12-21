@@ -45,9 +45,9 @@ func NewTui() *Tui {
 	t.grid = cview.NewGrid().
 		SetRows(4, 4).
 		SetColumns(40).
-		AddItem(banner, 0, 0, 12, 3, 3, 3, false).
-		AddItem(t.tracksList.TreeView, 3, 0, 10, 5, 0, 0, true).
-		AddItem(t.trackInfo.TextView, 3, 5, 10, 6, 0, 0, false).
+		AddItem(banner, 0, 0, 2, 2, 3, 3, false).
+		AddItem(t.tracksList.TreeView, 4, 0, 9, 11, 0, 0, true).
+		AddItem(t.trackInfo.TextView, 3, 0, 1, 11, 0, 0, false).
 		AddItem(t.cmd.TextView, 0, 4, 3, 7, 0, 0, false).
 		AddItem(t.trackProgress, 13, 0, 1, 11, 0, 0, false)
 
@@ -116,11 +116,8 @@ func (t *Tui) setCmdText() {
 
 func (t *Tui) SetTrackInfo(info util.TrackInfo) {
 	var text string
-	text = fmt.Sprintf("[blue]Title:[white] \n%s\n"+
-		"[blue]Album:[white] \n%s\n"+
-		"[blue]Artist:[white] \n%s\n"+
-		"[blue]Genre:[white] \n%s\n"+
-		"[blue]Year:[white] \n%d\n", info.Title, info.Album, info.Artist, info.Genre, info.Year)
+	text = fmt.Sprintf("[blue]Title:[white] %s "+"[blue]Album:[white] %s "+"[blue]Artist:[white] %s "+
+		"[blue]Genre:[white] %s "+"[blue]Year:[white] %d ", info.Title, info.Album, info.Artist, info.Genre, info.Year)
 
 	t.trackInfo.SetInfo(text)
 }
