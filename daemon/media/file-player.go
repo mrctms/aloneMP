@@ -34,6 +34,10 @@ type FilePlayer struct {
 func NewFilePlayer() (*FilePlayer, error) {
 	var err error
 	fp := new(FilePlayer)
+	fp.ctrl = new(beep.Ctrl)
+	fp.volume = new(effects.Volume)
+	fp.volume.Base = 2
+	fp.volume.Streamer = fp.ctrl
 	fp.playerInfo = new(PlayerInformer)
 	fp.logger, err = util.NewLogger("file-player.log")
 	if err != nil {
@@ -67,13 +71,8 @@ func (f *FilePlayer) Play(track Track) {
 		return
 	}
 	res := beep.Resample(4, f.format.SampleRate, initSimpleRate, f.streamer)
-	f.ctrl = new(beep.Ctrl)
 	f.ctrl.Streamer = res
-	f.volume = new(effects.Volume)
-	f.volume.Streamer = f.ctrl
-	f.volume.Base = 2
 	speaker.Play(f.volume)
-
 	f.inError = false
 
 }
@@ -109,7 +108,9 @@ func (f *FilePlayer) Mute() {
 
 func (f *FilePlayer) VolumeUp() {
 	speaker.Lock()
-	f.volume.Volume += 0.5
+	if !(f.volume.Volume == 0) {
+		f.volume.Volume += 0.5
+	}
 	speaker.Unlock()
 }
 
