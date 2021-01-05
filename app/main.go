@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 
 	"github.com/marcsauter/single"
@@ -47,6 +48,11 @@ func main() {
 			defer s.TryUnlock()
 		}
 
+		cleanPath, err := filepath.Abs(path.Clean(*dir))
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		var client clients.Clienter
 		sender, err := senders.NewTcpSender(*address)
 		if err != nil {
@@ -58,7 +64,7 @@ func main() {
 		}
 
 		client.SetSender(sender)
-		client.Run(*dir)
+		client.Run(cleanPath)
 	}
 
 }
