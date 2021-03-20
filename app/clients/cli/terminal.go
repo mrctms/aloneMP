@@ -34,8 +34,19 @@ func (t *TerminalClient) Run(rootDir string) {
 	go t.tui.Run()
 
 	t.sender.Initialize(rootDir)
-	time.Sleep(1 * time.Second)
-	tl := t.sender.TrackList()
+
+	var tl *util.TrackListMessage
+	c := 0
+	for tl == nil {
+		if c == 5 {
+			fmt.Println("timeout reached")
+			return
+		}
+		tl = t.sender.TrackList()
+		time.Sleep(1 * time.Second)
+		c++
+	}
+
 	t.tui.PopolateTracksList(*tl)
 	for {
 		select {
