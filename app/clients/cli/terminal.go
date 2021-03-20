@@ -39,6 +39,7 @@ func (t *TerminalClient) Run(rootDir string) {
 	c := 0
 	for tl == nil {
 		if c == 5 {
+			t.tui.Stop()
 			fmt.Println("timeout reached")
 			return
 		}
