@@ -34,7 +34,7 @@ func (t *TerminalClient) Run(rootDir string) {
 	go t.tui.Run()
 
 	t.sender.Initialize(rootDir)
-
+	time.Sleep(1 * time.Second)
 	var tl *util.TrackListMessage
 	c := 0
 	for tl == nil {
