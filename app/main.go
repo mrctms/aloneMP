@@ -48,9 +48,12 @@ func main() {
 			defer s.TryUnlock()
 		}
 
-		cleanPath, err := filepath.Abs(path.Clean(*dir))
-		if err != nil {
-			log.Fatalln(err)
+		cleanPath := path.Clean(*dir)
+		if filepath.IsAbs(cleanPath) {
+			cleanPath, err = filepath.Abs(cleanPath)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		}
 
 		var client clients.Clienter

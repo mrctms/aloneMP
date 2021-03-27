@@ -1,4 +1,5 @@
-/.vscode
+/app/.vscode/
+/daemon/.vscode/
 build.sh
 pkg.dbp
 setup.iss
